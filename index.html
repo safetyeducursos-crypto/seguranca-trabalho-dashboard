@@ -882,7 +882,12 @@ function renderDuplicatas(grupos, totalNCs) {
       <div id="grupo-body-${gi}" class="dup-grupo-body">
         ${ncsPrinc}${ncsSim}
         <div class="dup-acoes">
-          <div style="font-size:11px;color:var(--text2);align-self:center"><span class="pt">O que fazer com este grupo?</span> · <span class="zh">如何处理此组？</span></div>
+          <div style="font-size:11px;color:var(--text2);align-self:center;width:100%;margin-bottom:4px">
+            <span class="pt">O que fazer com este grupo?</span> · <span class="zh">如何处理此组？</span>
+          </div>
+          <button class="sim-btn" style="background:rgba(59,130,246,.2);color:#93c5fd;border:1px solid rgba(59,130,246,.4)" onclick="unificarGrupo(${gi})">
+            🔗 <span class="pt">Unificar em 1 NC</span> · <span class="zh">合并为1项</span>
+          </button>
           <button class="sim-btn sim-unif" onclick="ignorarGrupo(${gi})">
             <span class="pt">✓ Já está correto assim</span> · <span class="zh">✓ 保持现状</span>
           </button>
@@ -890,6 +895,92 @@ function renderDuplicatas(grupos, totalNCs) {
       </div>
     </div>`;
   }).join('');
+}
+
+async function unificarGrupo(gi) {
+  const grupo = _gruposDup[gi];
+  if (!grupo) return;
+
+  const principal = grupo.principal;
+  const similares = grupo.similares;
+
+  // Confirma com o usuário
+  const nomesPrincipal = textoNC(principal).slice(0,60);
+  const qtd = similares.length;
+  if (!confirm(`Manter como NC principal:\n"${nomesPrincipal}"\n\nRemover ${qtd} NC(s) duplicada(s) do painel?\n\nEsta ação marca as duplicatas como resolvidas/unificadas.`)) return;
+
+  const btn = document.querySelector(`#grupo-body-${gi} .dup-acoes button`);
+  if (btn) { btn.disabled = true; btn.textContent = 'Processando...'; }
+
+  let erros = 0;
+
+  // Para cada NC similar: marca como "resolvida" no Firebase com nota de unificação
+  for (const s of similares) {
+    const nc = s.nc;
+    const chave = nk(nc);
+    const tratativaExistente = T[chave] || {};
+
+    const tratativaUnif = {
+      ...tratativaExistente,
+      status:      'resolvida',
+      responsavel: tratativaExistente.responsavel || 'Sistema',
+      acao:        `[UNIFICADA] Duplicata da NC: "${textoNC(principal).slice(0,80)}" — Unificação feita pelo painel de duplicatas.`,
+      updatedAt:   new Date().toISOString(),
+      equipamento: nc.equipamento,
+      itemCurto:   nc.itemCurto,
+      setor:       nc.setor || '',
+      unificadaCom: textoNC(principal).slice(0,100),
+    };
+
+    try {
+      if (db) {
+        await db.ref('tratativas/' + chave).set(tratativaUnif);
+      }
+      T[chave] = tratativaUnif;
+    } catch(e) {
+      console.warn('Erro ao unificar:', e);
+      erros++;
+    }
+  }
+
+  // Atualiza a NC principal no Firebase com nota de que foi unificada
+  const chavePrincipal = nk(principal);
+  const tratPrincipal = T[chavePrincipal] || {};
+  try {
+    const update = {
+      ...tratPrincipal,
+      equipamento: principal.equipamento,
+      itemCurto:   principal.itemCurto,
+      setor:       principal.setor || '',
+      unificacaoFeita: true,
+      qtdUnificadas: qtd,
+      updatedAt: new Date().toISOString(),
+    };
+    if (db) await db.ref('tratativas/' + chavePrincipal).update(update);
+    T[chavePrincipal] = { ...tratPrincipal, ...update };
+  } catch(e) { console.warn('Erro ao atualizar principal:', e); }
+
+  if (erros > 0) {
+    toast(`${qtd - erros} de ${qtd} unificadas. ${erros} erro(s).`, 'err');
+  } else {
+    toast(`✅ ${qtd} NC(s) unificadas! Painel atualizado · 已合并 ${qtd} 项`, 'ok');
+  }
+
+  // Remove o grupo do painel de duplicatas visualmente
+  const el = document.getElementById('grupo-body-' + gi).closest('.dup-grupo');
+  el.style.transition = 'opacity .4s';
+  el.style.opacity = '0';
+  setTimeout(() => {
+    el.remove();
+    // Atualiza o painel principal de NCs
+    rTudo();
+    // Atualiza o resumo de duplicatas
+    const restantes = document.querySelectorAll('.dup-grupo').length;
+    if (restantes === 0) {
+      document.getElementById('dup-resultado').innerHTML =
+        '<div style="text-align:center;padding:2rem;color:var(--text2)"><div style="font-size:32px;margin-bottom:12px">✅</div><div style="font-size:14px;font-weight:500"><span class="pt">Todos os grupos foram tratados!</span> · <span class="zh" style="color:var(--teal)">所有重复项已处理！</span></div></div>';
+    }
+  }, 500);
 }
 
 function toggleGrupo(gi) {
