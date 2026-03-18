@@ -86,6 +86,24 @@ body{font-family:var(--font);background:var(--bg0);color:var(--text1);font-size:
 .loading{text-align:center;padding:3rem;color:var(--text2)}
 .spinner{width:28px;height:28px;border:3px solid rgba(255,255,255,.08);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 10px}
 @keyframes spin{to{transform:rotate(360deg)}}
+
+.sim-box{background:#1a2b42;border:1px solid #f59e0b;border-radius:8px;padding:14px 16px;margin-bottom:13px;display:none}
+.sim-box.visible{display:block}
+.sim-title{font-size:11px;font-weight:600;color:#fcd34d;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.sim-item{background:#0f1d2e;border:1px solid rgba(245,158,11,.25);border-radius:6px;padding:10px 12px;margin-bottom:8px}
+.sim-item:last-child{margin-bottom:0}
+.sim-desc{font-size:12px;font-weight:500;color:#e8eef4;margin-bottom:4px}
+.sim-meta{font-size:10px;color:#8fa3b8;margin-bottom:8px}
+.sim-pct{font-size:11px;font-weight:600;padding:2px 8px;border-radius:12px;display:inline-block;margin-bottom:8px}
+.sim-pct.alta{background:rgba(239,68,68,.2);color:#fca5a5}
+.sim-pct.media{background:rgba(245,158,11,.2);color:#fcd34d}
+.sim-acoes{display:flex;gap:6px;flex-wrap:wrap}
+.sim-btn{font-size:10px;padding:4px 12px;border-radius:6px;border:none;cursor:pointer;font-family:var(--font);font-weight:500;transition:.15s}
+.sim-unif{background:rgba(245,158,11,.2);color:#fcd34d;border:1px solid rgba(245,158,11,.4)}
+.sim-unif:hover{background:rgba(245,158,11,.4)}
+.sim-nova{background:rgba(34,197,94,.15);color:#86efac;border:1px solid rgba(34,197,94,.3)}
+.sim-nova:hover{background:rgba(34,197,94,.3)}
+
 .sni{background:var(--red-dim);color:#fca5a5}.sea{background:var(--amber-dim);color:#fcd34d}.srv{background:var(--green-dim);color:#86efac}
 @media(max-width:900px){.g4{grid-template-columns:repeat(2,1fr)}.g2,.g3{grid-template-columns:1fr}}
 @media(max-width:500px){.g4{grid-template-columns:1fr}.main{padding:12px}.ncg{grid-template-columns:1fr}}
@@ -163,11 +181,22 @@ body{font-family:var(--font);background:var(--bg0);color:var(--text1);font-size:
 <div class="overlay" id="mnc" style="display:none" onclick="if(event.target===this)fm('mnc')">
   <div class="modal">
     <h3 id="mtit"></h3>
+    
+    <div id="sim-box" class="sim-box">
+      <div class="sim-title">⚠ <span class="tri" style="display:inline"><span class="pt">NCs semelhantes encontradas</span> · <span class="zh">发现相似不合格项</span></span></div>
+      <div id="sim-lista"></div>
+      <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(245,158,11,.2);font-size:11px;color:#8fa3b8">
+        <span class="pt">Escolha uma opção acima ou</span> <span class="zh">选择上方选项或</span>
+        <button class="sim-btn sim-nova" onclick="simContinuar()" style="margin-left:6px">
+          <span class="pt">Cadastrar mesmo assim</span> · <span class="zh">仍然注册</span>
+        </button>
+      </div>
+    </div>
     <div class="mf"><label><span class="ti"><span class="pt">Status</span><span class="zh">状态</span></span></label>
       <select id="mst"><option value="nao-iniciada">Não iniciada · 未开始 · </option><option value="em-andamento">Em andamento · 进行中 · </option><option value="resolvida">Resolvida · 已解决 · </option></select></div>
     <div class="mf"><label><span class="ti"><span class="pt">Responsável</span><span class="zh">负责人</span></span></label><input type="text" id="mre" placeholder="Nome · 姓名"></div>
     <div class="mf"><label><span class="ti"><span class="pt">Prazo</span><span class="zh">截止日期</span></span></label><input type="date" id="mpr"></div>
-    <div class="mf"><label><span class="ti"><span class="pt">Ação tomada</span><span class="zh">采取措施</span></span></label><textarea id="mac" placeholder="Descreva a ação · 描述措施..."></textarea></div>
+    <div class="mf"><label><span class="ti"><span class="pt">Ação tomada</span><span class="zh">采取措施</span></span></label><textarea id="mac" placeholder="Descreva a ação · 描述措施..." oninput="verificarSim(this.value)""></textarea></div>
     <div class="mf"><label><span class="ti"><span class="pt">Foto / evidência</span><span class="zh">照片/证据</span></span></label>
       <div class="uz" onclick="document.getElementById('mfo').click()"><span class="ti"><span class="pt">Clique para anexar</span><span class="zh">点击上传</span></span><input type="file" id="mfo" accept="image/*" style="display:none" onchange="pf(this)"></div>
       <img id="ip" class="imgp"></div>
@@ -274,7 +303,7 @@ function rSem(){const h=new Date(),i=new Date(h);i.setDate(h.getDate()-h.getDay(
 
 function ns(d){SO+=d;rSem();}
 
-function om(nj){NCA=JSON.parse(nj);const tr=T[nk(NCA)]||{};document.getElementById('mtit').innerHTML=`<span class="ti"><span class="pt">Tratativa</span><span class="zh">整改措施</span></span><span style="font-size:11px;color:var(--text2);display:block;margin-top:3px">${NCA.itemCurto.slice(0,55)}</span>`;document.getElementById('mst').value=tr.status||'nao-iniciada';document.getElementById('mre').value=tr.responsavel||'';document.getElementById('mpr').value=tr.prazo||'';document.getElementById('mac').value=tr.acao||'';document.getElementById('ip').style.display='none';document.getElementById('mfo').value='';document.getElementById('mnc').style.display='flex';}
+function om(nj){NCA=JSON.parse(nj);window._simIgnorar=false;document.getElementById('sim-box').classList.remove('visible');const tr=T[nk(NCA)]||{};document.getElementById('mtit').innerHTML=`<span class="ti"><span class="pt">Tratativa</span><span class="zh">整改措施</span></span><span style="font-size:11px;color:var(--text2);display:block;margin-top:3px">${NCA.itemCurto.slice(0,55)}</span>`;document.getElementById('mst').value=tr.status||'nao-iniciada';document.getElementById('mre').value=tr.responsavel||'';document.getElementById('mpr').value=tr.prazo||'';document.getElementById('mac').value=tr.acao||'';document.getElementById('ip').style.display='none';document.getElementById('mfo').value='';document.getElementById('mnc').style.display='flex';}
 
 async function saveTrat(){if(!NCA)return;const btn=document.getElementById('bsnc');btn.disabled=true;const k=nk(NCA),tr={status:document.getElementById('mst').value,responsavel:document.getElementById('mre').value.trim(),prazo:document.getElementById('mpr').value,acao:document.getElementById('mac').value.trim(),updatedAt:new Date().toISOString(),equipamento:NCA.equipamento,itemCurto:NCA.itemCurto,setor:NCA.setor||''};try{if(db){await db.ref('tratativas/'+k).set(tr);toast('Salvo e sincronizado · 已保存并同步','ok');}else{T[k]=tr;rTudo();toast('Salvo localmente','ok');}}catch(e){T[k]=tr;rTudo();toast('Erro de sync — salvo localmente','err');}fm('mnc');btn.disabled=false;}
 
@@ -291,6 +320,199 @@ function pf(inp){if(inp.files&&inp.files[0]){const r=new FileReader();r.onload=e
 function toast(msg,type='ok'){const el=document.createElement('div');el.className='toast '+type;el.textContent=msg;document.body.appendChild(el);setTimeout(()=>el.remove(),3500);}
 
 function demo(){return{totalInspecoes:236,totalNcsUnicas:7,equipamentos:[{nome:'Solda MIG / Içamento',inspecoes:122,ncsUnicas:4},{nome:'Empilhadeira',inspecoes:75,ncsUnicas:2},{nome:'Granalha',inspecoes:23,ncsUnicas:1}],ncsUnicas:[{item:'Item 21',itemCurto:'Equipamento de içamento com problemas',equipamento:'Solda MIG / Içamento',setor:'Fabricação de Caixa',urgencia:'urgente',critico:true,diasEmAberto:22,ocorrencias:14,primeiraNota:'2026-02-24',responsaveis:['Jardel','Marcos'],comentarios:['ponte estragada']},{item:'Item 19',itemCurto:'Extintor ausente ou fora da validade',equipamento:'Solda MIG / Içamento',setor:'Fabricação de Caixa',urgencia:'urgente',critico:true,diasEmAberto:17,ocorrencias:7,primeiraNota:'2026-03-01',responsaveis:['Ricardo'],comentarios:['foi usado']},{item:'Item 5',itemCurto:'Freios sem funcionamento adequado',equipamento:'Empilhadeira',setor:'Logística',urgencia:'atencao',critico:true,diasEmAberto:9,ocorrencias:2,primeiraNota:'2026-03-09',responsaveis:['João'],comentarios:[]},{item:'Item 4',itemCurto:'Parada de emergência com falha',equipamento:'Granalha',setor:'Acabamento',urgencia:'atencao',critico:true,diasEmAberto:8,ocorrencias:3,primeiraNota:'2026-03-10',responsaveis:['Pedro'],comentarios:[]},{item:'Item 20',itemCurto:'EPI incompleto para soldagem',equipamento:'Solda MIG / Içamento',setor:'Fabricação de Caixa',urgencia:'recente',critico:true,diasEmAberto:3,ocorrencias:1,primeiraNota:'2026-03-15',responsaveis:['Jardel'],comentarios:['lente frontal']},{item:'Item 7',itemCurto:'Bateria com danos visuais',equipamento:'Empilhadeira',setor:'Logística',urgencia:'atencao',critico:true,diasEmAberto:7,ocorrencias:1,primeiraNota:'2026-03-11',responsaveis:['João'],comentarios:['inchaço']},{item:'Item 9',itemCurto:'Extintor com validade vencida',equipamento:'Granalha',setor:'Acabamento',urgencia:'atencao',critico:true,diasEmAberto:10,ocorrencias:4,primeiraNota:'2026-03-08',responsaveis:['Ana'],comentarios:['vencida']}]};}
+
+
+// ══ ANÁLISE DE SIMILARIDADE DE NCS ═══════════════════════════
+
+// Tokeniza texto: minúsculo, remove pontuação, split por espaço
+function tokenizar(txt) {
+  return txt.toLowerCase()
+    .replace(/[^a-záàãâéêíóôõúüçñ0-9\s]/gi, ' ')
+    .split(/\s+/)
+    .filter(t => t.length > 2)
+    .filter(t => !['que','com','sem','dos','das','nas','nos','uma','uns','umas','para','pelo','pela','este','esta','essa','esse','num','numa','mais','quando','onde','como','qual','quais','está','estão','tem','não'].includes(t));
+}
+
+// Similaridade Jaccard entre dois conjuntos de tokens
+function jaccard(tokA, tokB) {
+  const setA = new Set(tokA), setB = new Set(tokB);
+  const inter = [...setA].filter(t => setB.has(t)).length;
+  const uniao = new Set([...setA, ...setB]).size;
+  return uniao === 0 ? 0 : inter / uniao;
+}
+
+// Similaridade Cosine simples (frequência de tokens)
+function cosine(tokA, tokB) {
+  const freq = (toks) => toks.reduce((m, t) => { m[t] = (m[t]||0)+1; return m; }, {});
+  const fA = freq(tokA), fB = freq(tokB);
+  const todos = new Set([...Object.keys(fA), ...Object.keys(fB)]);
+  let dot=0, normA=0, normB=0;
+  todos.forEach(t => {
+    const a=fA[t]||0, b=fB[t]||0;
+    dot += a*b; normA += a*a; normB += b*b;
+  });
+  return (normA && normB) ? dot / (Math.sqrt(normA) * Math.sqrt(normB)) : 0;
+}
+
+// Score combinado (média Jaccard + Cosine)
+function scoreSim(txtA, txtB) {
+  const tA = tokenizar(txtA), tB = tokenizar(txtB);
+  if (!tA.length || !tB.length) return 0;
+  return (jaccard(tA, tB) + cosine(tA, tB)) / 2;
+}
+
+// Limite fallback local
+const LIMITE_SIM = 0.35;
+
+// ── ANÁLISE SEMÂNTICA COM GEMINI (GRATUITO) ──────────────────
+const GEMINI_KEY = "AIzaSyAhDlXmNUqY8AFZ9x9e8jZ_yzIZU-7bQ7o";
+const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + GEMINI_KEY;
+
+async function analisarComIA(descricaoNova, equipamentoAtual, setorAtual) {
+  const ncs = G.ncsUnicas || [];
+  if (!ncs.length) return [];
+
+  const listaExistentes = ncs.map((nc, i) =>
+    `[${i}] Equipamento: ${nc.equipamento} | Setor: ${nc.setor||'N/A'} | Problema: ${nc.itemCurto}`
+  ).join('\n');
+
+  const prompt = `Você é especialista em segurança do trabalho industrial.
+
+Analise se a nova ocorrência abaixo é semanticamente igual ou muito semelhante a alguma NC já registrada.
+Considere como semelhante quando: mesmo equipamento E mesmo tipo de problema (mesmo que descrito com palavras diferentes).
+Exemplos de mesmo problema: "ponte quebrada", "talha com defeito", "equipamento de içamento estragado", "braço mecânico parado" — todos são o mesmo problema.
+
+NOVA OCORRÊNCIA:
+Equipamento: ${equipamentoAtual || 'não informado'}
+Setor: ${setorAtual || 'não informado'}
+Descrição: ${descricaoNova}
+
+NCS JÁ REGISTRADAS:
+${listaExistentes}
+
+Responda APENAS com JSON válido, sem markdown, sem explicações fora do JSON:
+{"similares":[{"indice":0,"score":0.95,"motivo":"mesmo equipamento, mesmo defeito de içamento"}]}
+
+Regras:
+- Inclua apenas NCs com score >= 0.65
+- Se não houver nenhuma similar, retorne: {"similares":[]}
+- score entre 0 e 1 (1 = idêntico)`;
+
+  try {
+    const resp = await fetch(GEMINI_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.1, maxOutputTokens: 400 }
+      })
+    });
+
+    if (!resp.ok) throw new Error('Gemini HTTP ' + resp.status);
+    const data = await resp.json();
+    const txt = data.candidates?.[0]?.content?.parts?.[0]?.text || '{"similares":[]}';
+    const clean = txt.replace(/```json|```/g, '').trim();
+    const json = JSON.parse(clean);
+
+    return (json.similares || []).map(s => ({
+      nc: ncs[s.indice],
+      score: s.score,
+      pct: Math.round(s.score * 100),
+      motivo: s.motivo
+    })).filter(s => s.nc);
+
+  } catch(e) {
+    console.warn('Gemini indisponível — usando análise local:', e.message);
+    return analisarLocal(descricaoNova);
+  }
+}
+
+// Fallback local (sem IA)
+function analisarLocal(descricaoNova) {
+  if (!descricaoNova || descricaoNova.length < 8) return [];
+  const ncs = G.ncsUnicas || [];
+  return ncs
+    .map(nc => ({ nc, score: scoreSim(descricaoNova, nc.itemCurto), pct: 0, motivo: '' }))
+    .filter(s => s.score >= LIMITE_SIM)
+    .map(s => ({ ...s, pct: Math.round(s.score * 100) }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 3);
+}
+
+// Exibe painel de similaridade no modal
+function exibirSimilares(similares) {
+  const box = document.getElementById('sim-box');
+  const lista = document.getElementById('sim-lista');
+  if (!similares.length) { box.classList.remove('visible'); return; }
+
+  lista.innerHTML = similares.map((s, i) => {
+    const cls = s.pct >= 75 ? 'alta' : 'media';
+    const motivoHTML = s.motivo
+      ? `<div style="font-size:10px;color:#f59e0b;margin-bottom:6px;font-style:italic">🤖 IA: ${s.motivo}</div>`
+      : '';
+    return `<div class="sim-item">
+      <span class="sim-pct ${cls}">${s.pct}% semelhante · ${s.pct}% 相似</span>
+      <div class="sim-desc">${s.nc.itemCurto}</div>
+      ${motivoHTML}
+      <div class="sim-meta">${s.nc.equipamento} · ${s.nc.setor||'—'} · ${s.nc.ocorrencias}x registrada · desde ${s.nc.primeiraNota}</div>
+      <div class="sim-acoes">
+        <button class="sim-btn sim-unif" onclick="simUnificar(${i})">
+          <span class="pt">Unificar com esta</span> · <span class="zh">与此合并</span>
+        </button>
+        <button class="sim-btn sim-nova" onclick="simContinuar()">
+          <span class="pt">Cadastrar como nova</span> · <span class="zh">注册为新项</span>
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+
+  box.classList.add('visible');
+  window._similares = similares;
+}
+
+// Usuário escolhe UNIFICAR — incrementa ocorrência da NC existente
+async function simUnificar(idx) {
+  const sim = window._similares[idx];
+  if (!sim) return;
+  const nc = sim.nc;
+  // Fecha o painel e avisa
+  document.getElementById('sim-box').classList.remove('visible');
+  toast('Unificada com: ' + nc.itemCurto.slice(0,40) + ' · 已与现有项合并', 'ok');
+  // Fecha modal sem cadastrar nova
+  fm('mnc');
+}
+
+// Usuário escolhe CONTINUAR — esconde painel e permite salvar
+function simContinuar() {
+  document.getElementById('sim-box').classList.remove('visible');
+  window._simIgnorar = true;
+  toast('Prosseguindo com novo cadastro · 继续新建', 'ok');
+}
+
+
+// Verifica similaridade enquanto usuário digita — usa IA semântica
+let _simTimer = null;
+async function verificarSim(txt) {
+  clearTimeout(_simTimer);
+  const box = document.getElementById('sim-box');
+  if (!txt || txt.length < 10) { box.classList.remove('visible'); return; }
+
+  _simTimer = setTimeout(async () => {
+    if (window._simIgnorar) return;
+
+    // Mostra indicador de análise
+    box.classList.add('visible');
+    document.getElementById('sim-lista').innerHTML =
+      '<div style="font-size:11px;color:#8fa3b8;padding:8px 0">🔍 <span class="pt">Analisando com IA</span> · <span class="zh">AI分析中...</span></div>';
+
+    // Pega contexto atual do modal (equipamento e setor da NC sendo editada)
+    const equip = NCA ? NCA.equipamento : '';
+    const setor = NCA ? NCA.setor : '';
+
+    const similares = await analisarComIA(txt, equip, setor);
+    exibirSimilares(similares);
+  }, 800);
+}
 
 iniciar();
 </script>
