@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Segurança do Trabalho · 安全管理 · Safety</title>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg0:#07111d;--bg1:#0d1f30;--bg2:#132035;--bg3:#1a2b42;--border:rgba(255,255,255,.08);--border2:rgba(255,255,255,.14);--text1:#e8eef4;--text2:#8fa3b8;--text3:#556a7d;--blue:#3b82f6;--blue2:#1d4ed8;--blue-dim:rgba(59,130,246,.18);--red:#ef4444;--red-dim:rgba(239,68,68,.18);--amber:#f59e0b;--amber-dim:rgba(245,158,11,.18);--green:#22c55e;--green-dim:rgba(34,197,94,.18);--teal:#14b8a6;--radius:8px;--radius-lg:12px;--font:'Segoe UI',system-ui,sans-serif}
+body{font-family:var(--font);background:var(--bg0);color:var(--text1);font-size:14px;min-height:100vh}
+.tri{display:flex;flex-direction:column;gap:1px;line-height:1.3}
+.tri .pt{font-size:12px;font-weight:500;color:var(--text1)}.tri .zh{font-size:11px;color:var(--teal)}.tri .en{display:none}
+.ti{display:inline-flex;gap:5px;align-items:baseline;flex-wrap:wrap}
+.ti .pt{font-size:13px;font-weight:500}.ti .zh{font-size:11px;color:var(--teal)}.ti .en{display:none}
+.tb{display:flex;flex-direction:column;gap:1px;align-items:center}
+.tb .pt{font-size:11px;font-weight:500}.tb .zh{font-size:10px;color:var(--teal)}.tb .en{display:none}
+.header{background:var(--bg1);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.header h1{font-size:16px;font-weight:600}.header p{font-size:10px;color:var(--teal);margin-top:1px}
+.hright{display:flex;align-items:center;gap:16px}
+.clock .time{font-size:22px;font-weight:300;letter-spacing:.02em}.clock .date{font-size:10px;color:var(--text2);margin-top:1px;text-align:right}
+.sync{display:flex;align-items:center;gap:5px;font-size:10px;padding:4px 10px;border-radius:20px;border:1px solid var(--border)}
+.sdot{width:6px;height:6px;border-radius:50%;background:var(--amber);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.nav{background:var(--bg1);border-bottom:1px solid var(--border);display:flex;padding:0 20px;overflow-x:auto;gap:2px}
+.nb{padding:10px 14px;background:transparent;border:none;border-bottom:2px solid transparent;cursor:pointer;color:var(--text2);transition:.15s;white-space:nowrap;font-family:var(--font)}
+.nb:hover{color:var(--text1)}.nb.active{color:var(--blue);border-bottom-color:var(--blue)}
+.main{padding:20px 24px;max-width:1400px;margin:0 auto}
+.tab{display:none}.tab.active{display:block}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.g2{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:14px;margin-bottom:20px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px;margin-bottom:12px}
+.ct{margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.kpi{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px;position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%}
+.kpi.blue::before{background:var(--blue)}.kpi.red::before{background:var(--red)}.kpi.amber::before{background:var(--amber)}.kpi.green::before{background:var(--green)}.kpi.teal::before{background:var(--teal)}
+.kv{font-size:28px;font-weight:500;line-height:1;margin:8px 0 4px}
+.kpi.blue .kv{color:#93c5fd}.kpi.red .kv{color:#fca5a5}.kpi.amber .kv{color:#fcd34d}.kpi.green .kv{color:#86efac}.kpi.teal .kv{color:#5eead4}
+.ks{font-size:10px;color:var(--text2);margin-top:4px}
+.badge{font-size:10px;font-weight:500;padding:2px 8px;border-radius:20px;display:inline-block}
+.br{background:var(--red-dim);color:#fca5a5}.ba{background:var(--amber-dim);color:#fcd34d}.bg{background:var(--green-dim);color:#86efac}.bb{background:var(--blue-dim);color:#93c5fd}.bt{background:rgba(20,184,166,.15);color:#5eead4}
+.nc{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px}
+.nc.urgente{border-left:3px solid var(--red)}.nc.atencao{border-left:3px solid var(--amber)}.nc.recente{border-left:3px solid var(--green)}.nc.resolvida{border-left:3px solid var(--green);opacity:.5}
+.ncg{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:start}
+.ncd{font-size:22px;font-weight:500;text-align:right;line-height:1}
+.nc.urgente .ncd{color:#fca5a5}.nc.atencao .ncd{color:#fcd34d}.nc.recente .ncd,.nc.resolvida .ncd{color:#86efac}
+.fb{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.fbtn{font-size:10px;padding:4px 12px;border-radius:20px;border:1px solid var(--border2);background:transparent;cursor:pointer;color:var(--text2);transition:.15s;font-family:var(--font)}
+.fbtn:hover{color:var(--text1)}.fbtn.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.btn{padding:7px 14px;border-radius:var(--radius);border:none;cursor:pointer;font-family:var(--font);font-size:12px;transition:.15s}
+.bp{background:var(--blue);color:#fff}.bp:hover{background:var(--blue2)}
+.bgh{background:transparent;border:1px solid var(--border2);color:var(--text2)}.bgh:hover{color:var(--text1)}
+.bd{background:var(--red-dim);color:#fca5a5;border:1px solid rgba(239,68,68,.3)}
+.bsm{padding:4px 10px;font-size:10px}.btn:disabled{opacity:.4;cursor:not-allowed}
+.tbl{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}
+.tbl th{font-size:10px;color:var(--text2);text-align:left;padding:8px 10px;background:var(--bg3);border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:.04em;font-weight:500}
+.tbl td{padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:middle;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tbl tr:last-child td{border-bottom:none}.tbl tr:hover td{background:rgba(59,130,246,.05)}
+.eqr{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}.eqr:last-child{border-bottom:none}
+.eqn{font-size:12px;font-weight:500;min-width:160px;flex-shrink:0}
+.eqb{flex:1;height:5px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden}
+.eqbf{height:100%;border-radius:3px;transition:width .5s}
+.eqnum{font-size:11px;color:var(--text2);text-align:right;min-width:90px;flex-shrink:0}
+.sn{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.sn button{width:28px;height:28px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--text1);cursor:pointer;font-size:14px;font-family:var(--font)}
+.sl{font-size:12px;color:#93c5fd;font-weight:500;min-width:220px}
+.dc{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px}
+.dh{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px}
+.dt{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:300;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:22px;width:100%;max-width:520px;max-height:92vh;overflow-y:auto}
+.modal h3{font-size:14px;font-weight:600;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.mf{margin-bottom:13px}.mf label{display:block;margin-bottom:5px}
+.mf input,.mf select,.mf textarea{width:100%;padding:8px 11px;border-radius:var(--radius);border:1px solid var(--border2);background:var(--bg3);color:var(--text1);font-size:13px;font-family:var(--font)}
+.mf textarea{resize:vertical;min-height:68px}.mf input:focus,.mf select:focus,.mf textarea:focus{outline:none;border-color:var(--blue)}
+.mbtns{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+.uz{border:1px dashed var(--border2);border-radius:var(--radius);padding:14px;text-align:center;cursor:pointer;color:var(--text2);font-size:11px}
+.uz:hover{border-color:var(--blue);color:#93c5fd}
+.imgp{max-width:100%;max-height:120px;border-radius:6px;margin-top:8px;display:none}
+.toast{position:fixed;bottom:24px;right:24px;z-index:999;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);padding:12px 18px;font-size:12px;animation:si .2s ease;max-width:320px}
+@keyframes si{from{transform:translateY(8px);opacity:0}to{transform:translateY(0);opacity:1}}
+.toast.ok{border-left:3px solid var(--green)}.toast.err{border-left:3px solid var(--red)}
+.loading{text-align:center;padding:3rem;color:var(--text2)}
+.spinner{width:28px;height:28px;border:3px solid rgba(255,255,255,.08);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 10px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.sni{background:var(--red-dim);color:#fca5a5}.sea{background:var(--amber-dim);color:#fcd34d}.srv{background:var(--green-dim);color:#86efac}
+@media(max-width:900px){.g4{grid-template-columns:repeat(2,1fr)}.g2,.g3{grid-template-columns:1fr}}
+@media(max-width:500px){.g4{grid-template-columns:1fr}.main{padding:12px}.ncg{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="header">
+  <div><h1><span class="ti"><span class="pt">Segurança do Trabalho</span><span class="zh">安全管理</span></span></h1>
+  <p>Sistema integrado de inspeções · 综合检查系统</p></div>
+  <div class="hright">
+    <div class="sync"><span class="sdot" id="sdot"></span><span id="stxt" style="color:var(--text2);font-size:10px">Conectando...</span></div>
+    <div class="clock"><div class="time" id="hora">--:--</div><div class="date" id="dstr"></div></div>
+  </div>
+</div>
+<div class="nav">
+  <button class="nb active" onclick="aba('g',this)"><span class="tb"><span class="pt">Visão Geral</span><span class="zh">总览</span></span></button>
+  <button class="nb" onclick="aba('n',this)"><span class="tb"><span class="pt">Não Conformidades</span><span class="zh">不合格项</span></span></button>
+  <button class="nb" onclick="aba('t',this)"><span class="tb"><span class="pt">Tratativas</span><span class="zh">处理措施</span></span></button>
+  <button class="nb" onclick="aba('d',this)"><span class="tb"><span class="pt">DSS</span><span class="zh">安全对话</span></span></button>
+  <button class="nb" onclick="aba('s',this)"><span class="tb"><span class="pt">Relatório Semanal</span><span class="zh">周报</span></span></button>
+</div>
+<div class="main">
+  <div id="tg" class="tab active">
+    <div class="g4" id="kg"></div>
+    <div class="g2">
+      <div class="card"><div class="ct"><span class="tri"><span class="pt">NCs por equipamento</span><span class="zh">各设备不合格项</span></span></div><div id="el"></div></div>
+      <div class="card"><div class="ct"><span class="tri"><span class="pt">Status das tratativas</span><span class="zh">整改状态</span></span></div><div style="position:relative;height:160px"><canvas id="chs"></canvas></div><div id="chl" style="display:flex;gap:10px;margin-top:10px;font-size:10px;color:var(--text2);flex-wrap:wrap"></div></div>
+    </div>
+    <div class="g3" id="kdr"></div>
+  </div>
+  <div id="tn" class="tab"><div class="fb" id="nfb"></div><div id="nl"><div class="loading"><div class="spinner"></div></div></div></div>
+  <div id="tt" class="tab">
+    <div class="fb">
+      <button class="fbtn active" onclick="ft('todos',this)"><span class="tb"><span class="pt">Todas</span><span class="zh">全部</span></span></button>
+      <button class="fbtn" onclick="ft('nao-iniciada',this)"><span class="tb"><span class="pt">Não iniciadas</span><span class="zh">未开始</span></span></button>
+      <button class="fbtn" onclick="ft('em-andamento',this)"><span class="tb"><span class="pt">Em andamento</span><span class="zh">进行中</span></span></button>
+      <button class="fbtn" onclick="ft('resolvida',this)"><span class="tb"><span class="pt">Resolvidas</span><span class="zh">已解决</span></span></button>
+    </div>
+    <div class="card" style="padding:0;overflow-x:auto"><table class="tbl"><thead><tr>
+      <th style="width:16%"><span class="tri"><span class="pt">Equipamento</span><span class="zh">设备</span></span></th>
+      <th style="width:24%"><span class="tri"><span class="pt">Problema</span><span class="zh">问题</span></span></th>
+      <th style="width:11%"><span class="tri"><span class="pt">Status</span><span class="zh">状态</span></span></th>
+      <th style="width:10%"><span class="tri"><span class="pt">Prazo</span><span class="zh">期限</span></span></th>
+      <th style="width:14%"><span class="tri"><span class="pt">Responsável</span><span class="zh">负责人</span></span></th>
+      <th style="width:20%"><span class="tri"><span class="pt">Ação tomada</span><span class="zh">采取措施</span></span></th>
+      <th style="width:5%"></th>
+    </tr></thead><tbody id="tb"></tbody></table></div>
+  </div>
+  <div id="td" class="tab">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+      <span class="tri"><span class="pt">Diálogos de Segurança registrados</span><span class="zh">已记录安全对话</span></span>
+      <button class="btn bp" onclick="abrirDSS()"><span class="tb"><span class="pt">+ Novo DSS</span><span class="zh">+ 新增对话</span></span></button>
+    </div>
+    <div class="g3" id="kd"></div>
+    <div id="dl"><div class="loading"><div class="spinner"></div></div></div>
+  </div>
+  <div id="ts" class="tab">
+    <div class="sn"><button onclick="ns(-1)">‹</button><span class="sl" id="sl"></span><button onclick="ns(1)">›</button>
+      <button class="btn bgh bsm" style="margin-left:12px" onclick="window.print()"><span class="tb"><span class="pt">Exportar</span><span class="zh">导出</span></span></button>
+    </div>
+    <div class="g4" id="ks"></div>
+    <div class="card" style="margin-bottom:14px"><div class="ct"><span class="tri"><span class="pt">NCs por equipamento na semana</span><span class="zh">本周各设备不合格项</span></span></div><div style="position:relative;height:180px"><canvas id="chsem"></canvas></div></div>
+    <div class="card" style="padding:0;overflow-x:auto"><table class="tbl"><thead><tr>
+      <th style="width:10%"><span class="tri"><span class="pt">Data</span><span class="zh">日期</span></span></th>
+      <th style="width:18%"><span class="tri"><span class="pt">Equipamento</span><span class="zh">设备</span></span></th>
+      <th style="width:28%"><span class="tri"><span class="pt">Problema</span><span class="zh">问题</span></span></th>
+      <th style="width:14%"><span class="tri"><span class="pt">Registrado por</span><span class="zh">记录人</span></span></th>
+      <th style="width:12%"><span class="tri"><span class="pt">Status</span><span class="zh">状态</span></span></th>
+      <th style="width:18%"><span class="tri"><span class="pt">Ação</span><span class="zh">措施</span></span></th>
+    </tr></thead><tbody id="sb"></tbody></table></div>
+  </div>
+</div>
+
+<!-- MODAL NC -->
+<div class="overlay" id="mnc" style="display:none" onclick="if(event.target===this)fm('mnc')">
+  <div class="modal">
+    <h3 id="mtit"></h3>
+    <div class="mf"><label><span class="ti"><span class="pt">Status</span><span class="zh">状态</span></span></label>
+      <select id="mst"><option value="nao-iniciada">Não iniciada · 未开始 · </option><option value="em-andamento">Em andamento · 进行中 · </option><option value="resolvida">Resolvida · 已解决 · </option></select></div>
+    <div class="mf"><label><span class="ti"><span class="pt">Responsável</span><span class="zh">负责人</span></span></label><input type="text" id="mre" placeholder="Nome · 姓名"></div>
+    <div class="mf"><label><span class="ti"><span class="pt">Prazo</span><span class="zh">截止日期</span></span></label><input type="date" id="mpr"></div>
+    <div class="mf"><label><span class="ti"><span class="pt">Ação tomada</span><span class="zh">采取措施</span></span></label><textarea id="mac" placeholder="Descreva a ação · 描述措施..."></textarea></div>
+    <div class="mf"><label><span class="ti"><span class="pt">Foto / evidência</span><span class="zh">照片/证据</span></span></label>
+      <div class="uz" onclick="document.getElementById('mfo').click()"><span class="ti"><span class="pt">Clique para anexar</span><span class="zh">点击上传</span></span><input type="file" id="mfo" accept="image/*" style="display:none" onchange="pf(this)"></div>
+      <img id="ip" class="imgp"></div>
+    <div class="mbtns">
+      <button class="btn bgh" onclick="fm('mnc')"><span class="tb"><span class="pt">Cancelar</span><span class="zh">取消</span></span></button>
+      <button class="btn bp" id="bsnc" onclick="saveTrat()"><span class="tb"><span class="pt">Salvar</span><span class="zh">保存</span></span></button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DSS -->
+<div class="overlay" id="mdss" style="display:none" onclick="if(event.target===this)fm('mdss')">
+  <div class="modal">
+    <h3><span class="ti"><span class="pt">Novo DSS</span><span class="zh">新安全对话</span></span></h3>
+    <div class="mf"><label><span class="ti"><span class="pt">Data</span><span class="zh">日期</span></span></label><input type="date" id="dd"></div>
+    <div class="mf"><label><span class="ti"><span class="pt">Tema principal</span><span class="zh">主要主题</span></span></label><input type="text" id="dt" placeholder="Tema · 主题"></div>
+    <div class="mf"><label><span class="ti"><span class="pt">Setor / Área</span><span class="zh">部门/区域</span></span></label><input type="text" id="dse"></div>
+    <div class="mf"><label><span class="ti"><span class="pt">Responsável</span><span class="zh">负责人</span></span></label><input type="text" id="dr" placeholder="Nome · 姓名"></div>
+    <div class="mf"><label><span class="ti"><span class="pt">Nº de participantes</span><span class="zh">参与人数</span></span></label><input type="number" id="dp" min="1" placeholder="0"></div>
+    <div class="mf"><label><span class="ti"><span class="pt">Assuntos discutidos</span><span class="zh">讨论内容</span></span></label><textarea id="da" placeholder="Descreva os assuntos · 描述讨论内容..."></textarea></div>
+    <div class="mf"><label><span class="ti"><span class="pt">Observações</span><span class="zh">备注</span></span></label><textarea id="do"></textarea></div>
+    <div class="mbtns">
+      <button class="btn bgh" onclick="fm('mdss')"><span class="tb"><span class="pt">Cancelar</span><span class="zh">取消</span></span></button>
+      <button class="btn bp" id="bsdss" onclick="saveDSS()"><span class="tb"><span class="pt">Registrar DSS</span><span class="zh">记录对话</span></span></button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══ CONFIGURAÇÃO ══════════════════════════════════════════════
+// Suas credenciais do Firebase — obtenha em:
+// console.firebase.google.com → Configurações → Seus apps → Web
+const FC = {
+  apiKey:            "COLE_SUA_API_KEY_AQUI",
+  authDomain:        "seguranca-trabalho-80ff4.firebaseapp.com",
+  databaseURL:       "https://seguranca-trabalho-80ff4-default-rtdb.firebaseio.com",
+  projectId:         "seguranca-trabalho-80ff4",
+  storageBucket:     "seguranca-trabalho-80ff4.appspot.com",
+  messagingSenderId: "COLE_SEU_SENDER_ID_AQUI",
+  appId:             "COLE_SEU_APP_ID_AQUI"
+};
+const ADMIN_KEY = "seguranca2024"; // Troque por uma senha sua
+const API_URL   = "https://script.google.com/macros/s/AKfycbxePZYvMoBXuMqanvYDpdo7cxSx4E8-eTqysjQj4zJ-pyT00EzrUeWRS6Kt_BKbjmCU/exec";
+// ══════════════════════════════════════════════════════════════
+
+let db=null,G={ncsUnicas:[],equipamentos:[],totalInspecoes:0},T={},DL=[],SO=0,NCA=null,isAdmin=false,chs=null,chsem=null;
+
+try{firebase.initializeApp(FC);db=firebase.database();}catch(e){console.warn("Firebase não configurado");}
+
+isAdmin=new URLSearchParams(window.location.search).get('admin')===ADMIN_KEY;
+
+function tick(){const n=new Date();document.getElementById('hora').textContent=n.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});document.getElementById('dstr').textContent=n.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'short',year:'numeric'});}
+tick();setInterval(tick,30000);
+
+function aba(id,btn){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));document.getElementById('t'+id).classList.add('active');btn.classList.add('active');if(id==='s')rSem();if(id==='d')rDSS();}
+
+function setSS(s){const d=document.getElementById('sdot'),t=document.getElementById('stxt');const m={ok:{c:'#22c55e',t:'Sincronizado · 已同步'},loading:{c:'#f59e0b',t:'Conectando · 连接中'},demo:{c:'#f59e0b',t:'Demonstração · 演示'}};const e=m[s]||m.loading;d.style.background=e.c;t.textContent=e.t;}
+
+function iniciar(){
+  if(!db){G=demo();rTudo();setSS('demo');return;}
+  setSS('loading');
+  db.ref('tratativas').on('value',s=>{T=s.val()||{};if(G.ncsUnicas.length)rTudo();});
+  db.ref('dss').on('value',s=>{const r=s.val()||{};DL=Object.entries(r).map(([id,v])=>({id,...v})).sort((a,b)=>b.data.localeCompare(a.data));rDK();if(document.getElementById('td').classList.contains('active'))rDSS();});
+  buscar();setInterval(buscar,5*60*1000);
+}
+
+async function buscar(){
+  try{const r=await fetch(API_URL+'?_='+Date.now());if(!r.ok)throw new Error();const d=await r.json();if(d.erro)throw new Error();G=d;rTudo();setSS('ok');}
+  catch(e){setSS(G.ncsUnicas.length?'ok':'demo');if(!G.ncsUnicas.length){G=demo();rTudo();}}
+}
+
+function nk(nc){return(nc.equipamento+'__'+nc.itemCurto).replace(/[^a-zA-Z0-9_]/g,'_').slice(0,120);}
+function st(nc){return(T[nk(nc)]||{}).status||'nao-iniciada';}
+
+function rTudo(){
+  const ncs=G.ncsUnicas||[],ab=ncs.filter(n=>st(n)!=='resolvida'),rv=ncs.filter(n=>st(n)==='resolvida'),urg=ab.filter(n=>n.urgencia==='urgente'),ant=ab[0];
+  document.getElementById('kg').innerHTML=[
+    {c:'blue',pt:'Inspeções realizadas',zh:'检查次数',en:'Inspections done',v:G.totalInspecoes,s:(G.equipamentos||[]).length+' equip.'},
+    {c:'red',pt:'NCs únicas em aberto',zh:'未解决不合格项',en:'Open unique NCs',v:ab.length,s:urg.length+' urgentes'},
+    {c:'amber',pt:'Mais antiga sem resolver',zh:'最长未解决',en:'Oldest unresolved',v:ant?ant.diasEmAberto+'d':'—',s:ant?ant.equipamento:''},
+    {c:'green',pt:'NCs resolvidas',zh:'已解决项',en:' NCs',v:rv.length,s:'no período'},
+  ].map(k=>`<div class="kpi ${k.c}"><div><span class="tri"><span class="pt">${k.pt}</span><span class="zh">${k.zh}</span></span></div><div class="kv">${k.v}</div><div class="ks">${k.s}</div></div>`).join('');
+  rEq();rGS(ncs);rFN();rNCs(ncs,'todos');rTr('todos');rDK();
+}
+
+function rEq(){const eq=G.equipamentos||[],mx=Math.max(...eq.map(e=>e.ncsUnicas),1);document.getElementById('el').innerHTML=eq.sort((a,b)=>b.ncsUnicas-a.ncsUnicas).map(e=>{const p=Math.round(e.ncsUnicas/mx*100),c=e.ncsUnicas===0?'#22c55e':e.ncsUnicas<=2?'#f59e0b':'#ef4444';return`<div class="eqr"><div class="eqn">${e.nome}</div><div class="eqb"><div class="eqbf" style="width:${p}%;background:${c}"></div></div><div class="eqnum"><span style="color:${c};font-weight:500">${e.ncsUnicas} NCs</span> · ${e.inspecoes} insp.</div></div>`;}).join('');}
+
+function rGS(ncs){const ni=ncs.filter(n=>st(n)==='nao-iniciada').length,ea=ncs.filter(n=>st(n)==='em-andamento').length,rv=ncs.filter(n=>st(n)==='resolvida').length;if(chs)chs.destroy();chs=new Chart(document.getElementById('chs'),{type:'doughnut',data:{labels:['Não iniciada','Em andamento','Resolvida'],datasets:[{data:[ni,ea,rv],backgroundColor:['#ef4444','#f59e0b','#22c55e'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:false}}}});document.getElementById('chl').innerHTML=[{c:'#ef4444',pt:'Não iniciada',zh:'未开始',en:'',n:ni},{c:'#f59e0b',pt:'Em andamento',zh:'进行中',en:'',n:ea},{c:'#22c55e',pt:'Resolvida',zh:'已解决',en:'',n:rv}].map(x=>`<span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:${x.c};display:inline-block"></span><span class="ti"><span class="pt">${x.pt}</span><span class="zh">${x.zh}</span></span><strong style="color:${x.c}">(${x.n})</strong></span>`).join('');}
+
+function rDK(){const tot=DL.length,n=new Date(),mes=DL.filter(d=>{const m=new Date(d.data);return m.getMonth()===n.getMonth()&&m.getFullYear()===n.getFullYear();}).length,par=DL.reduce((a,d)=>a+(parseInt(d.participantes)||0),0),h=[{c:'teal',pt:'Total de DSS',zh:'安全对话总数',en:'Total DSS',v:tot,s:'desde o início'},{c:'blue',pt:'DSS este mês',zh:'本月对话',en:'This month',v:mes,s:'mês atual'},{c:'green',pt:'Total participantes',zh:'总参与人数',en:'Total participants',v:par,s:'acumulado'}].map(k=>`<div class="kpi ${k.c}"><div><span class="tri"><span class="pt">${k.pt}</span><span class="zh">${k.zh}</span></span></div><div class="kv">${k.v}</div><div class="ks">${k.s}</div></div>`).join('');['kd','kdr'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=h;});}
+
+function rDSS(){rDK();if(!DL.length){document.getElementById('dl').innerHTML='<p style="text-align:center;color:var(--text2);padding:2rem"><span class="tri"><span class="pt">Nenhum DSS registrado ainda</span><span class="zh">暂无安全对话记录</span></span></p>';return;}document.getElementById('dl').innerHTML=DL.map(d=>`<div class="dc"><div class="dh"><div><div style="font-size:10px;color:var(--text3)">${d.data} · ${d.setor||'—'}</div><div style="font-size:13px;font-weight:500;margin:4px 0">${d.tema||'—'}</div><div style="font-size:11px;color:var(--text2)"><span class="ti"><span class="pt">Responsável:</span><span class="zh">负责人:</span></span> <strong style="color:var(--text1)">${d.responsavel||'—'}</strong> · <span class="ti"><span class="pt">Participantes:</span><span class="zh">参与:</span></span> <strong style="color:#5eead4">${d.participantes||0}</strong></div></div>${isAdmin?`<button class="btn bd bsm" onclick="delDSS('${d.id}')"><span class="tb"><span class="pt">Excluir</span><span class="zh">删除</span></span></button>`:''}</div>${d.assuntos?`<div style="font-size:12px;color:var(--text2);line-height:1.6">${d.assuntos.replace(/\n/g,'<br>')}</div>`:''} ${d.obs?`<div style="font-size:11px;color:var(--text3);margin-top:6px;font-style:italic">${d.obs}</div>`:''}<div class="dt">${(d.assuntos||'').split('\n').filter(Boolean).slice(0,3).map(t=>`<span class="badge bt">${t.slice(0,30)}</span>`).join('')}</div></div>`).join('');}
+
+function rFN(){const eq=[...new Set((G.ncsUnicas||[]).map(n=>n.equipamento))];const bar=document.getElementById('nfb');bar.innerHTML='';[{pt:'Todos',zh:'全部',en:'All',v:'todos'},{pt:'Urgentes',zh:'紧急',en:'Urgent',v:'urgente'},{pt:'Críticos',zh:'关键',en:'Critical',v:'critico'},{pt:'Não iniciados',zh:'未开始',en:'',v:'nao-iniciada'},{pt:'Em andamento',zh:'进行中',en:'',v:'em-andamento'},{pt:'Resolvidos',zh:'已解决',en:'',v:'resolvida'},...eq.map(e=>({pt:e,zh:e,en:e,v:e}))].forEach((b,i)=>{const btn=document.createElement('button');btn.className='fbtn'+(i===0?' active':'');btn.innerHTML=`<span class="tb"><span class="pt">${b.pt}</span><span class="zh">${b.zh}</span></span>`;btn.onclick=()=>{document.querySelectorAll('#nfb .fbtn').forEach(x=>x.classList.remove('active'));btn.classList.add('active');rNCs(G.ncsUnicas,b.v);};bar.appendChild(btn);});}
+
+function rNCs(ncs,f){const l=ncs.filter(n=>{if(f==='todos')return true;if(f==='urgente')return n.urgencia==='urgente';if(f==='critico')return n.critico;if(f==='nao-iniciada')return st(n)==='nao-iniciada';if(f==='em-andamento')return st(n)==='em-andamento';if(f==='resolvida')return st(n)==='resolvida';return n.equipamento===f;});if(!l.length){document.getElementById('nl').innerHTML='<p style="text-align:center;color:var(--text2);padding:2rem"><span class="tri"><span class="pt">Nenhuma NC neste filtro</span><span class="zh">无结果</span></span></p>';return;}
+document.getElementById('nl').innerHTML=l.map(nc=>{const k=nk(nc),tr=T[k]||{},s2=tr.status||'nao-iniciada',cls=s2==='resolvida'?'resolvida':nc.urgencia,pc=nc.urgencia==='urgente'?'background:var(--red-dim);color:#fca5a5':nc.urgencia==='atencao'?'background:var(--amber-dim);color:#fcd34d':'background:var(--green-dim);color:#86efac',sc=s2==='nao-iniciada'?'sni':s2==='em-andamento'?'sea':'srv',sl2=s2==='nao-iniciada'?'<span class="ti"><span class="pt">Não iniciada</span><span class="zh">未开始</span></span>':s2==='em-andamento'?'<span class="ti"><span class="pt">Em andamento</span><span class="zh">进行中</span></span>':'<span class="ti"><span class="pt">Resolvida</span><span class="zh">已解决</span></span>',resp=nc.responsaveis.slice(0,2).join(', ')+(nc.responsaveis.length>2?` +${nc.responsaveis.length-2}`:''),pv=tr.prazo&&new Date(tr.prazo)<new Date()&&s2!=='resolvida',nj=JSON.stringify(JSON.stringify(nc));return`<div class="nc ${cls}"><div class="ncg"><div><span class="badge" style="${pc}">${nc.item}</span><div style="font-size:10px;color:var(--text2);margin-top:5px">${nc.equipamento}</div>${nc.critico?'<div style="font-size:10px;color:#fca5a5;margin-top:3px">▲ <span class="ti"><span class="pt">Crítico</span><span class="zh">关键</span></span></div>':''}</div><div><div style="font-size:13px;font-weight:500;margin-bottom:4px">${nc.itemCurto}</div><div style="font-size:11px;color:var(--text2);line-height:1.7"><span class="ti"><span class="pt">Setor:</span><span class="zh">部门:</span></span> <strong style="color:var(--text1)">${nc.setor||'—'}</strong> · <span class="ti"><span class="pt">Por:</span><span class="zh">记录:</span></span> ${resp}<br>${nc.ocorrencias}x · ${nc.primeiraNota}${nc.comentarios.length?'<br><em style="color:var(--text3)">"'+nc.comentarios[0].slice(0,80)+'"</em>':''}</div>${tr.responsavel?`<div style="font-size:11px;color:var(--text2);margin-top:6px"><span class="ti"><span class="pt">Responsável:</span><span class="zh">负责人:</span></span> <strong style="color:var(--text1)">${tr.responsavel}</strong>${tr.prazo?` · <span class="ti"><span class="pt">Prazo:</span><span class="zh">期限:</span></span> <strong style="color:${pv?'#fca5a5':'#fcd34d'}">${tr.prazo}${pv?' ⚠':''}</strong>`:''}</div>`:''}${tr.acao?`<div style="font-size:11px;color:var(--text2);margin-top:3px"><span class="ti"><span class="pt">Ação:</span><span class="zh">措施:</span></span> ${tr.acao.slice(0,90)}</div>`:''}<div style="margin-top:8px"><span class="badge ${sc}">${sl2}</span></div></div><div style="text-align:right"><div class="ncd">${nc.diasEmAberto}</div><div style="font-size:10px;color:var(--text2);margin-top:2px"><span class="ti"><span class="pt">dias</span><span class="zh">天</span></span></div><button class="btn bp bsm" style="margin-top:10px;display:block;width:100%" onclick='om(${nj})'><span class="tb"><span class="pt">${s2==='nao-iniciada'?'Iniciar':'Atualizar'}</span><span class="zh">${s2==='nao-iniciada'?'开始':'更新'}</span></span></button>${isAdmin?`<button class="btn bd bsm" style="margin-top:6px;display:block;width:100%" onclick="delTr('${k}')"><span class="tb"><span class="pt">Excluir</span><span class="zh">删除</span></span></button>`:''}</div></div></div>`;}).join('');}
+
+function rTr(f){const ncs=(G.ncsUnicas||[]).filter(n=>f==='todos'||st(n)===f),sl=s=>s==='nao-iniciada'?'Não iniciada':s==='em-andamento'?'Em andamento':'Resolvida',sc=s=>s==='nao-iniciada'?'#fca5a5':s==='em-andamento'?'#fcd34d':'#86efac';document.getElementById('tb').innerHTML=ncs.map(nc=>{const tr=T[nk(nc)]||{},s2=tr.status||'nao-iniciada',pv=tr.prazo&&new Date(tr.prazo)<new Date()&&s2!=='resolvida';return`<tr><td title="${nc.equipamento}">${nc.equipamento.slice(0,18)}</td><td title="${nc.itemCurto}">${nc.itemCurto.slice(0,35)}</td><td><span style="font-size:10px;color:${sc(s2)}">${sl(s2)}</span></td><td style="color:${pv?'#fca5a5':tr.prazo?'#fcd34d':'var(--text3)'}">${tr.prazo||'—'}${pv?' ⚠':''}</td><td title="${tr.responsavel||''}">${(tr.responsavel||'—').slice(0,18)}</td><td style="color:var(--text2)" title="${tr.acao||''}">${tr.acao?tr.acao.slice(0,30)+'…':'—'}</td><td><button class="btn bgh bsm" onclick='om(${JSON.stringify(JSON.stringify(nc))})'>✎</button></td></tr>`;}).join('');}
+
+function ft(f,btn){document.querySelectorAll('#tt .fbtn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');rTr(f);}
+
+function rSem(){const h=new Date(),i=new Date(h);i.setDate(h.getDate()-h.getDay()+1+SO*7);i.setHours(0,0,0,0);const fim=new Date(i);fim.setDate(i.getDate()+6);fim.setHours(23,59,59,999);document.getElementById('sl').textContent=SO===0?'Esta semana · 本周':SO===-1?'Semana passada · 上周':i.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'})+' – '+fim.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'});const ncs=G.ncsUnicas||[],sem=ncs.filter(n=>{const d=new Date(n.primeiraNota);return d>=i&&d<=fim;}),rv=sem.filter(n=>st(n)==='resolvida').length,urg=sem.filter(n=>n.urgencia==='urgente').length,ds=DL.filter(d=>{const dt=new Date(d.data);return dt>=i&&dt<=fim;}).length;document.getElementById('ks').innerHTML=[{c:'blue',pt:'Inspeções',zh:'检查次数',en:'Inspections',v:G.totalInspecoes},{c:'red',pt:'NCs semana',zh:'本周不合格',en:'Week NCs',v:sem.length,s:urg+' urgentes'},{c:'green',pt:'Resolvidas',zh:'已解决',en:'',v:rv},{c:'teal',pt:'DSS semana',zh:'本周安全对话',en:'Week DSS',v:ds}].map(k=>`<div class="kpi ${k.c}"><div><span class="tri"><span class="pt">${k.pt}</span><span class="zh">${k.zh}</span></span></div><div class="kv">${k.v}</div>${k.s?`<div class="ks">${k.s}</div>`:''}</div>`).join('');const pe={};sem.forEach(n=>{pe[n.equipamento]=(pe[n.equipamento]||0)+1;});const labs=Object.keys(pe),vals=labs.map(l=>pe[l]);if(chsem)chsem.destroy();if(labs.length)chsem=new Chart(document.getElementById('chsem'),{type:'bar',data:{labels:labs,datasets:[{label:'NCs',data:vals,backgroundColor:'#3b82f6',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#8fa3b8',font:{size:11}},grid:{display:false}},y:{ticks:{color:'#8fa3b8',font:{size:10}},grid:{color:'rgba(255,255,255,.05)'}}}}});const sl2=s=>s==='nao-iniciada'?'Não iniciada':s==='em-andamento'?'Em andamento':'Resolvida',sc=s=>s==='nao-iniciada'?'#fca5a5':s==='em-andamento'?'#fcd34d':'#86efac';document.getElementById('sb').innerHTML=sem.length?sem.map(nc=>{const tr=T[nk(nc)]||{},s2=tr.status||'nao-iniciada';return`<tr><td>${nc.primeiraNota}</td><td title="${nc.equipamento}">${nc.equipamento.slice(0,16)}</td><td title="${nc.itemCurto}">${nc.itemCurto.slice(0,35)}</td><td>${nc.responsaveis[0]||'—'}</td><td><span style="font-size:11px;color:${sc(s2)}">${sl2(s2)}</span></td><td style="color:var(--text2)">${tr.acao?tr.acao.slice(0,28)+'…':'—'}</td></tr>`;}).join(''):'<tr><td colspan="6" style="text-align:center;color:var(--text2);padding:1.5rem"><span class="tri"><span class="pt">Nenhuma NC esta semana</span><span class="zh">本周无不合格项</span></span></td></tr>';}
+
+function ns(d){SO+=d;rSem();}
+
+function om(nj){NCA=JSON.parse(nj);const tr=T[nk(NCA)]||{};document.getElementById('mtit').innerHTML=`<span class="ti"><span class="pt">Tratativa</span><span class="zh">整改措施</span></span><span style="font-size:11px;color:var(--text2);display:block;margin-top:3px">${NCA.itemCurto.slice(0,55)}</span>`;document.getElementById('mst').value=tr.status||'nao-iniciada';document.getElementById('mre').value=tr.responsavel||'';document.getElementById('mpr').value=tr.prazo||'';document.getElementById('mac').value=tr.acao||'';document.getElementById('ip').style.display='none';document.getElementById('mfo').value='';document.getElementById('mnc').style.display='flex';}
+
+async function saveTrat(){if(!NCA)return;const btn=document.getElementById('bsnc');btn.disabled=true;const k=nk(NCA),tr={status:document.getElementById('mst').value,responsavel:document.getElementById('mre').value.trim(),prazo:document.getElementById('mpr').value,acao:document.getElementById('mac').value.trim(),updatedAt:new Date().toISOString(),equipamento:NCA.equipamento,itemCurto:NCA.itemCurto,setor:NCA.setor||''};try{if(db){await db.ref('tratativas/'+k).set(tr);toast('Salvo e sincronizado · 已保存并同步','ok');}else{T[k]=tr;rTudo();toast('Salvo localmente','ok');}}catch(e){T[k]=tr;rTudo();toast('Erro de sync — salvo localmente','err');}fm('mnc');btn.disabled=false;}
+
+async function delTr(k){if(!isAdmin){toast('Sem permissão · 无权限','err');return;}if(!confirm('Excluir esta tratativa?'))return;try{if(db)await db.ref('tratativas/'+k).remove();delete T[k];rTudo();toast('Excluído · 已删除','ok');}catch(e){toast('Erro ao excluir','err');}}
+
+function abrirDSS(){document.getElementById('dd').value=new Date().toISOString().split('T')[0];['dt','dse','dr','da','do'].forEach(id=>document.getElementById(id).value='');document.getElementById('dp').value='';document.getElementById('mdss').style.display='flex';}
+
+async function saveDSS(){const btn=document.getElementById('bsdss'),tema=document.getElementById('dt').value.trim();if(!tema){toast('Informe o tema · 请填写主题','err');return;}btn.disabled=true;const dss={data:document.getElementById('dd').value,tema,setor:document.getElementById('dse').value.trim(),responsavel:document.getElementById('dr').value.trim(),participantes:parseInt(document.getElementById('dp').value)||0,assuntos:document.getElementById('da').value.trim(),obs:document.getElementById('do').value.trim(),criadoEm:new Date().toISOString()};try{if(db){await db.ref('dss').push(dss);toast('DSS registrado · 已记录','ok');}else{DL.unshift({id:Date.now().toString(),...dss});rDSS();toast('Salvo localmente','ok');}}catch(e){toast('Erro ao salvar DSS','err');}fm('mdss');btn.disabled=false;}
+
+async function delDSS(id){if(!isAdmin){toast('Sem permissão · 无权限','err');return;}if(!confirm('Excluir este DSS?'))return;try{if(db)await db.ref('dss/'+id).remove();DL=DL.filter(d=>d.id!==id);rDSS();toast('DSS excluído · 已删除','ok');}catch(e){toast('Erro ao excluir','err');}}
+
+function fm(id){document.getElementById(id).style.display='none';NCA=null;}
+function pf(inp){if(inp.files&&inp.files[0]){const r=new FileReader();r.onload=e=>{const i=document.getElementById('ip');i.src=e.target.result;i.style.display='block';};r.readAsDataURL(inp.files[0]);}}
+function toast(msg,type='ok'){const el=document.createElement('div');el.className='toast '+type;el.textContent=msg;document.body.appendChild(el);setTimeout(()=>el.remove(),3500);}
+
+function demo(){return{totalInspecoes:236,totalNcsUnicas:7,equipamentos:[{nome:'Solda MIG / Içamento',inspecoes:122,ncsUnicas:4},{nome:'Empilhadeira',inspecoes:75,ncsUnicas:2},{nome:'Granalha',inspecoes:23,ncsUnicas:1}],ncsUnicas:[{item:'Item 21',itemCurto:'Equipamento de içamento com problemas',equipamento:'Solda MIG / Içamento',setor:'Fabricação de Caixa',urgencia:'urgente',critico:true,diasEmAberto:22,ocorrencias:14,primeiraNota:'2026-02-24',responsaveis:['Jardel','Marcos'],comentarios:['ponte estragada']},{item:'Item 19',itemCurto:'Extintor ausente ou fora da validade',equipamento:'Solda MIG / Içamento',setor:'Fabricação de Caixa',urgencia:'urgente',critico:true,diasEmAberto:17,ocorrencias:7,primeiraNota:'2026-03-01',responsaveis:['Ricardo'],comentarios:['foi usado']},{item:'Item 5',itemCurto:'Freios sem funcionamento adequado',equipamento:'Empilhadeira',setor:'Logística',urgencia:'atencao',critico:true,diasEmAberto:9,ocorrencias:2,primeiraNota:'2026-03-09',responsaveis:['João'],comentarios:[]},{item:'Item 4',itemCurto:'Parada de emergência com falha',equipamento:'Granalha',setor:'Acabamento',urgencia:'atencao',critico:true,diasEmAberto:8,ocorrencias:3,primeiraNota:'2026-03-10',responsaveis:['Pedro'],comentarios:[]},{item:'Item 20',itemCurto:'EPI incompleto para soldagem',equipamento:'Solda MIG / Içamento',setor:'Fabricação de Caixa',urgencia:'recente',critico:true,diasEmAberto:3,ocorrencias:1,primeiraNota:'2026-03-15',responsaveis:['Jardel'],comentarios:['lente frontal']},{item:'Item 7',itemCurto:'Bateria com danos visuais',equipamento:'Empilhadeira',setor:'Logística',urgencia:'atencao',critico:true,diasEmAberto:7,ocorrencias:1,primeiraNota:'2026-03-11',responsaveis:['João'],comentarios:['inchaço']},{item:'Item 9',itemCurto:'Extintor com validade vencida',equipamento:'Granalha',setor:'Acabamento',urgencia:'atencao',critico:true,diasEmAberto:10,ocorrencias:4,primeiraNota:'2026-03-08',responsaveis:['Ana'],comentarios:['vencida']}]};}
+
+iniciar();
+</script>
+</body>
+</html>
