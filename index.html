@@ -428,7 +428,7 @@ const LIMITE_SIM = 0.35;
 
 // ── ANÁLISE SEMÂNTICA COM GEMINI (GRATUITO) ──────────────────
 const GEMINI_KEY = "AIzaSyAhDlXmNUqY8AFZ9x9e8jZ_yzIZU-7bQ7o";
-const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + GEMINI_KEY;
+const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + GEMINI_KEY;
 
 async function analisarComIA(descricaoNova, equipamentoAtual, setorAtual) {
   const ncs = G.ncsUnicas || [];
