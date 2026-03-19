@@ -325,7 +325,17 @@ function setSS(s){const d=document.getElementById('sdot'),t=document.getElementB
 function iniciar(){
   if(!db){G=demo();rTudo();setSS('demo');return;}
   setSS('loading');
-  db.ref('tratativas').on('value',s=>{T=s.val()||{};if(G.ncsUnicas.length)rTudo();});
+  db.ref('tratativas').on('value',s=>{
+    T=s.val()||{};
+    if(G.ncsUnicas.length){
+      rTudo();
+      // Garante que o painel de NCs seja re-renderizado com filtros atualizados
+      const abaAtiva=document.querySelector('.nb.active');
+      if(abaAtiva&&abaAtiva.textContent.includes('Conformidades')){
+        rNCs(G.ncsUnicas,'todos');
+      }
+    }
+  });
   db.ref('dss').on('value',s=>{const r=s.val()||{};DL=Object.entries(r).map(([id,v])=>({id,...v})).sort((a,b)=>b.data.localeCompare(a.data));rDK();if(document.getElementById('td').classList.contains('active'))rDSS();});
   buscar();setInterval(buscar,5*60*1000);
 }
@@ -339,7 +349,7 @@ function nk(nc){return(nc.equipamento+'__'+nc.itemCurto).replace(/[^a-zA-Z0-9_]/
 function st(nc){return(T[nk(nc)]||{}).status||'nao-iniciada';}
 
 function rTudo(){
-  const ncs=G.ncsUnicas||[],ab=ncs.filter(n=>{const trat=T[nk(n)]||{};const unif=trat.acao&&trat.acao.startsWith('[UNIFICADA]');return st(n)!=='resolvida'&&!unif;}),rv=ncs.filter(n=>st(n)==='resolvida'),urg=ab.filter(n=>n.urgencia==='urgente'),ant=ab[0];
+  const ncs=G.ncsUnicas||[],ab=ncs.filter(n=>st(n)!=='resolvida'&&!ehUnificada(n)),rv=ncs.filter(n=>st(n)==='resolvida'&&!ehUnificada(n)),urg=ab.filter(n=>n.urgencia==='urgente'),ant=ab[0];
   document.getElementById('kg').innerHTML=[
     {c:'blue',pt:'Inspeções realizadas',zh:'检查次数',en:'Inspections done',v:G.totalInspecoes,s:(G.equipamentos||[]).length+' equip.'},
     {c:'red',pt:'NCs únicas em aberto',zh:'未解决不合格项',en:'Open unique NCs',v:ab.length,s:urg.length+' urgentes'},
@@ -359,7 +369,13 @@ function rDSS(){rDK();if(!DL.length){document.getElementById('dl').innerHTML='<p
 
 function rFN(){const eq=[...new Set((G.ncsUnicas||[]).map(n=>n.equipamento))];const bar=document.getElementById('nfb');bar.innerHTML='';[{pt:'Todos',zh:'全部',en:'All',v:'todos'},{pt:'Urgentes',zh:'紧急',en:'Urgent',v:'urgente'},{pt:'Críticos',zh:'关键',en:'Critical',v:'critico'},{pt:'Não iniciados',zh:'未开始',en:'',v:'nao-iniciada'},{pt:'Em andamento',zh:'进行中',en:'',v:'em-andamento'},{pt:'Resolvidos',zh:'已解决',en:'',v:'resolvida'},{pt:'Unificadas',zh:'已合并',en:'',v:'todas-incluindo-unificadas'},...eq.map(e=>({pt:e,zh:e,en:e,v:e}))].forEach((b,i)=>{const btn=document.createElement('button');btn.className='fbtn'+(i===0?' active':'');btn.innerHTML=`<span class="tb"><span class="pt">${b.pt}</span><span class="zh">${b.zh}</span></span>`;btn.onclick=()=>{document.querySelectorAll('#nfb .fbtn').forEach(x=>x.classList.remove('active'));btn.classList.add('active');rNCs(G.ncsUnicas,b.v);};bar.appendChild(btn);});}
 
-function rNCs(ncs,f){const l=ncs.filter(n=>{const trat=T[nk(n)]||{};const unificada=trat.acao&&trat.acao.startsWith('[UNIFICADA]');if(unificada&&f!=='todas-incluindo-unificadas')return false;if(f==='todos')return true;if(f==='urgente')return n.urgencia==='urgente';if(f==='critico')return n.critico;if(f==='nao-iniciada')return st(n)==='nao-iniciada';if(f==='em-andamento')return st(n)==='em-andamento';if(f==='resolvida')return st(n)==='resolvida';return n.equipamento===f;});if(!l.length){document.getElementById('nl').innerHTML='<p style="text-align:center;color:var(--text2);padding:2rem"><span class="tri"><span class="pt">Nenhuma NC neste filtro</span><span class="zh">无结果</span></span></p>';return;}
+function ehUnificada(nc){
+  const chave=nk(nc);
+  const trat=T[chave]||{};
+  return !!(trat.acao&&trat.acao.startsWith('[UNIFICADA]'));
+}
+
+function rNCs(ncs,f){const l=ncs.filter(n=>{if(ehUnificada(n)&&f!=='todas-incluindo-unificadas')return false;if(f==='todos')return true;if(f==='urgente')return n.urgencia==='urgente';if(f==='critico')return n.critico;if(f==='nao-iniciada')return st(n)==='nao-iniciada';if(f==='em-andamento')return st(n)==='em-andamento';if(f==='resolvida')return st(n)==='resolvida';return n.equipamento===f;});if(!l.length){document.getElementById('nl').innerHTML='<p style="text-align:center;color:var(--text2);padding:2rem"><span class="tri"><span class="pt">Nenhuma NC neste filtro</span><span class="zh">无结果</span></span></p>';return;}
 document.getElementById('nl').innerHTML=l.map(nc=>{const k=nk(nc),tr=T[k]||{},s2=tr.status||'nao-iniciada',cls=s2==='resolvida'?'resolvida':nc.urgencia,pc=nc.urgencia==='urgente'?'background:var(--red-dim);color:#fca5a5':nc.urgencia==='atencao'?'background:var(--amber-dim);color:#fcd34d':'background:var(--green-dim);color:#86efac',sc=s2==='nao-iniciada'?'sni':s2==='em-andamento'?'sea':'srv',sl2=s2==='nao-iniciada'?'<span class="ti"><span class="pt">Não iniciada</span><span class="zh">未开始</span></span>':s2==='em-andamento'?'<span class="ti"><span class="pt">Em andamento</span><span class="zh">进行中</span></span>':'<span class="ti"><span class="pt">Resolvida</span><span class="zh">已解决</span></span>',resp=nc.responsaveis.slice(0,2).join(', ')+(nc.responsaveis.length>2?` +${nc.responsaveis.length-2}`:''),pv=tr.prazo&&new Date(tr.prazo)<new Date()&&s2!=='resolvida',nj=JSON.stringify(JSON.stringify(nc));return`<div class="nc ${cls}"><div class="ncg"><div><span class="badge" style="${pc}">${nc.item}</span><div style="font-size:10px;color:var(--text2);margin-top:5px">${nc.equipamento}</div>${nc.critico?'<div style="font-size:10px;color:#fca5a5;margin-top:3px">▲ <span class="ti"><span class="pt">Crítico</span><span class="zh">关键</span></span></div>':''}</div><div><div style="font-size:13px;font-weight:500;margin-bottom:4px">${nc.itemCurto}</div><div style="font-size:11px;color:var(--text2);line-height:1.7"><span class="ti"><span class="pt">Setor:</span><span class="zh">部门:</span></span> <strong style="color:var(--text1)">${nc.setor||'—'}</strong> · <span class="ti"><span class="pt">Por:</span><span class="zh">记录:</span></span> ${resp}<br>${nc.ocorrencias}x · ${nc.primeiraNota}${nc.comentarios.length?'<br><em style="color:var(--text3)">"'+nc.comentarios[0].slice(0,80)+'"</em>':''}</div>${tr.responsavel?`<div style="font-size:11px;color:var(--text2);margin-top:6px"><span class="ti"><span class="pt">Responsável:</span><span class="zh">负责人:</span></span> <strong style="color:var(--text1)">${tr.responsavel}</strong>${tr.prazo?` · <span class="ti"><span class="pt">Prazo:</span><span class="zh">期限:</span></span> <strong style="color:${pv?'#fca5a5':'#fcd34d'}">${tr.prazo}${pv?' ⚠':''}</strong>`:''}</div>`:''}${tr.acao?`<div style="font-size:11px;color:var(--text2);margin-top:3px"><span class="ti"><span class="pt">Ação:</span><span class="zh">措施:</span></span> ${tr.acao.slice(0,90)}</div>`:''}<div style="margin-top:8px"><span class="badge ${sc}">${sl2}</span></div></div><div style="text-align:right"><div class="ncd">${nc.diasEmAberto}</div><div style="font-size:10px;color:var(--text2);margin-top:2px"><span class="ti"><span class="pt">dias</span><span class="zh">天</span></span></div><button class="btn bp bsm" style="margin-top:10px;display:block;width:100%" onclick='om(${nj})'><span class="tb"><span class="pt">${s2==='nao-iniciada'?'Iniciar':'Atualizar'}</span><span class="zh">${s2==='nao-iniciada'?'开始':'更新'}</span></span></button>${isAdmin?`<button class="btn bd bsm" style="margin-top:6px;display:block;width:100%" onclick="delTr('${k}')"><span class="tb"><span class="pt">Excluir</span><span class="zh">删除</span></span></button>`:''}</div></div></div>`;}).join('');}
 
 function rTr(f){const ncs=(G.ncsUnicas||[]).filter(n=>f==='todos'||st(n)===f),sl=s=>s==='nao-iniciada'?'Não iniciada':s==='em-andamento'?'Em andamento':'Resolvida',sc=s=>s==='nao-iniciada'?'#fca5a5':s==='em-andamento'?'#fcd34d':'#86efac';document.getElementById('tb').innerHTML=ncs.map(nc=>{const tr=T[nk(nc)]||{},s2=tr.status||'nao-iniciada',pv=tr.prazo&&new Date(tr.prazo)<new Date()&&s2!=='resolvida';return`<tr><td title="${nc.equipamento}">${nc.equipamento.slice(0,18)}</td><td title="${nc.itemCurto}">${nc.itemCurto.slice(0,35)}</td><td><span style="font-size:10px;color:${sc(s2)}">${sl(s2)}</span></td><td style="color:${pv?'#fca5a5':tr.prazo?'#fcd34d':'var(--text3)'}">${tr.prazo||'—'}${pv?' ⚠':''}</td><td title="${tr.responsavel||''}">${(tr.responsavel||'—').slice(0,18)}</td><td style="color:var(--text2)" title="${tr.acao||''}">${tr.acao?tr.acao.slice(0,30)+'…':'—'}</td><td><button class="btn bgh bsm" onclick='om(${JSON.stringify(JSON.stringify(nc))})'>✎</button></td></tr>`;}).join('');}
