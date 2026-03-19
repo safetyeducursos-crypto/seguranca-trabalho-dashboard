@@ -339,7 +339,25 @@ isAdmin=new URLSearchParams(window.location.search).get('admin')===ADMIN_KEY;
 function tick(){const n=new Date();document.getElementById('hora').textContent=n.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});document.getElementById('dstr').textContent=n.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'short',year:'numeric'});}
 tick();setInterval(tick,30000);
 
-function aba(id,btn){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));document.getElementById('t'+id).classList.add('active');btn.classList.add('active');if(id==='s')rSem();if(id==='d')rDSS();if(id==='i')renderInspecoes('hoje');}
+function aba(id,btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
+  document.getElementById('t'+id).classList.add('active');
+  btn.classList.add('active');
+  if(id==='s') rSem();
+  if(id==='d') rDSS();
+  if(id==='i'){
+    // Se dados já carregados, renderiza imediatamente
+    if(G.inspecoesHoje && G.inspecoesHoje.length > 0){
+      renderInspecoes('hoje');
+    } else {
+      // Mostra loading e aguarda buscarAPI completar
+      document.getElementById('insp-lista').innerHTML='<div class="loading"><div class="spinner"></div><p style="color:var(--text2);margin-top:8px">Carregando inspeções...</p></div>';
+      // Tenta buscar novamente se dados vazios
+      buscar().then(()=>renderInspecoes('hoje'));
+    }
+  }
+}
 
 function setSS(s){const d=document.getElementById('sdot'),t=document.getElementById('stxt');const m={ok:{c:'#22c55e',t:'Sincronizado · 已同步'},loading:{c:'#f59e0b',t:'Conectando · 连接中'},demo:{c:'#f59e0b',t:'Demonstração · 演示'}};const e=m[s]||m.loading;d.style.background=e.c;t.textContent=e.t;}
 
@@ -362,8 +380,25 @@ function iniciar(){
 }
 
 async function buscar(){
-  try{const r=await fetch(API_URL+'?_='+Date.now());if(!r.ok)throw new Error();const d=await r.json();if(d.erro)throw new Error();G=d;rTudo();setSS('ok');}
-  catch(e){setSS(G.ncsUnicas.length?'ok':'demo');if(!G.ncsUnicas.length){G=demo();rTudo();}}
+  try{
+    const r=await fetch(API_URL+'?_='+Date.now());
+    if(!r.ok)throw new Error();
+    const d=await r.json();
+    if(d.erro)throw new Error();
+    G=d;
+    // Garante arrays mesmo que venham vazios
+    if(!G.inspecoesHoje)   G.inspecoesHoje=[];
+    if(!G.inspecoesSemana) G.inspecoesSemana=[];
+    rTudo();
+    setSS('ok');
+    // Atualiza aba de inspeções se estiver aberta
+    if(document.getElementById('ti')&&document.getElementById('ti').classList.contains('active')){
+      renderInspecoes(_filtroInsp||'hoje');
+    }
+  }catch(e){
+    setSS(G.ncsUnicas.length?'ok':'demo');
+    if(!G.ncsUnicas.length){G=demo();G.inspecoesHoje=[];G.inspecoesSemana=[];rTudo();}
+  }
 }
 
 function nk(nc){return(nc.equipamento+'__'+nc.itemCurto).replace(/[^a-zA-Z0-9_]/g,'_').slice(0,120);}
