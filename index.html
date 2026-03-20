@@ -23,7 +23,7 @@ body{font-family:var(--font);background:var(--bg0);color:var(--text1);font-size:
 .clock .time{font-size:22px;font-weight:300;letter-spacing:.02em}.clock .date{font-size:10px;color:var(--text2);margin-top:1px;text-align:right}
 .sync{display:flex;align-items:center;gap:5px;font-size:10px;padding:4px 10px;border-radius:20px;border:1px solid var(--border)}
 .sdot{width:6px;height:6px;border-radius:50%;background:var(--amber);animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3)}
 .nav{background:var(--bg1);border-bottom:1px solid var(--border);display:flex;padding:0 20px;overflow-x:auto;gap:2px}
 .nb{padding:10px 14px;background:transparent;border:none;border-bottom:2px solid transparent;cursor:pointer;color:var(--text2);transition:.15s;white-space:nowrap;font-family:var(--font)}
 .nb:hover{color:var(--text1)}.nb.active{color:var(--blue);border-bottom-color:var(--blue)}
@@ -81,7 +81,7 @@ body{font-family:var(--font);background:var(--bg0);color:var(--text1);font-size:
 .uz:hover{border-color:var(--blue);color:#93c5fd}
 .imgp{max-width:100%;max-height:120px;border-radius:6px;margin-top:8px;display:none}
 .toast{position:fixed;bottom:24px;right:24px;z-index:999;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);padding:12px 18px;font-size:12px;animation:si .2s ease;max-width:320px}
-@keyframes si{from{transform:translateY(8px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes si{from{transform:translateY(8px);opacity:0}to{transform:translateY(0);opacity:1)}
 .toast.ok{border-left:3px solid var(--green)}.toast.err{border-left:3px solid var(--red)}
 .loading{text-align:center;padding:3rem;color:var(--text2)}
 .spinner{width:28px;height:28px;border:3px solid rgba(255,255,255,.08);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 10px}
@@ -472,7 +472,7 @@ function ns(d){SO+=d;rSem();}
 
 function om(nj){NCA=JSON.parse(nj);window._simIgnorar=false;document.getElementById('sim-box').classList.remove('visible');const tr=T[nk(NCA)]||{};document.getElementById('mtit').innerHTML=`<span class="ti"><span class="pt">Tratativa</span><span class="zh">整改措施</span></span><span style="font-size:11px;color:var(--text2);display:block;margin-top:3px">${NCA.itemCurto.slice(0,55)}</span>`;document.getElementById('mst').value=tr.status||'nao-iniciada';document.getElementById('mre').value=tr.responsavel||'';document.getElementById('mpr').value=tr.prazo||'';document.getElementById('mac').value=tr.acao||'';document.getElementById('ip').style.display='none';document.getElementById('mfo').value='';document.getElementById('mnc').style.display='flex';}
 
-async function saveTrat(){if(!NCA)return;const btn=document.getElementById('bsnc');btn.disabled=true;const k=nk(NCA),tr={status:document.getElementById('mst').value,responsavel:document.getElementById('mre').value.trim(),prazo:document.getElementById('mpr').value,acao:document.getElementById('mac').value.trim(),updatedAt:new Date().toISOString(),equipamento:NCA.equipamento,itemCurto:NCA.itemCurto,setor:NCA.setor||''};try{if(db){await db.ref('tratativas/'+k).set(tr);toast('Salvo e sincronizado · 已保存并同步','ok');}else{T[k]=tr;rTudo();toast('Salvo localmente','ok');}}catch(e){T[k]=tr;rTudo();toast('Erro de sync — salvo localmente','err');}fm('mnc');btn.disabled=false;}
+async function saveTrat(){if(!NCA)return;const btn=document.getElementById('bsnc');btn.disabled=true;const k=nk(NCA),tr={status:document.getElementById('mst').value,responsavel:document.getElementById('mre').value.trim(),prazo:document.getElementById('mpr').value,acao:document.getElementById('mac').value.trim(),updatedAt:new Date().toISOString(),equipamento:NCA.equipamento,itemCurto:NCA.itemCurto,setor:NCA.setor||''};try{if(db){await db.ref('tratativas/'+k).set(tr);toast('Salvo e sincronizado · 已保存并同步','ok');}else{T[k]=tr;rTudo();toast('Salvo localmente','ok');} }catch(e){T[k]=tr;rTudo();toast('Erro de sync — salvo localmente','err');}fm('mnc');btn.disabled=false;}
 
 async function delTr(k){if(!isAdmin){toast('Sem permissão · 无权限','err');return;}if(!confirm('Excluir esta tratativa?'))return;try{if(db)await db.ref('tratativas/'+k).remove();delete T[k];rTudo();toast('Excluído · 已删除','ok');}catch(e){toast('Erro ao excluir','err');}}
 
@@ -829,7 +829,7 @@ function normalizar(txt) {
 
 // Pré-filtragem rápida por palavras-chave comuns (antes de chamar a IA)
 function temPalavraEmComum(txtA, txtB) {
-  const stopwords = new Set(['e','o','a','os','as','de','do','da','dos','das','em','no','na','nos','nas','um','uma','uns','umas','para','com','sem','por','que','nao','nao','esta','esta','estao','tem','nao','foi','ser','esta','tambem','so','mais','muito','ja','ainda','quando','onde','como','qual','quais','seu','sua','seus','suas']);
+  const stopwords = new Set(['e','o','a','os','as','de','do','da','dos','das','em','no','na','nos','nas','um','uma','uns','umas','para','pelo','pela','este','esta','essa','esse','num','numa','mais','quando','onde','como','qual','quais','seu','sua','seus','suas']);
   const toksA = normalizar(txtA).split(' ').filter(t => t.length > 2 && !stopwords.has(t));
   const toksB = normalizar(txtB).split(' ').filter(t => t.length > 2 && !stopwords.has(t));
   if (!toksA.length || !toksB.length) return true; // sem tokens suficientes, deixa IA decidir
