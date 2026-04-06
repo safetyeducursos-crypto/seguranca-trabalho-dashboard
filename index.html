@@ -1,322 +1,262 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-br">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Segurança do Trabalho · 安全管理 · Safety</title>
+<title>Segurança do Trabalho</title>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{--bg0:#07111d;--bg1:#0d1f30;--bg2:#132035;--bg3:#1a2b42;--border:rgba(255,255,255,.08);--border2:rgba(255,255,255,.14);--text1:#e8eef4;--text2:#8fa3b8;--text3:#556a7d;--blue:#3b82f6;--blue2:#1d4ed8;--blue-dim:rgba(59,130,246,.18);--red:#ef4444;--red-dim:rgba(239,68,68,.18);--amber:#f59e0b;--amber-dim:rgba(245,158,11,.18);--green:#22c55e;--green-dim:rgba(34,197,94,.18);--teal:#14b8a6;--radius:8px;--radius-lg:12px;--font:'Segoe UI',system-ui,sans-serif}
-body{font-family:var(--font);background:var(--bg0);color:var(--text1);font-size:14px;min-height:100vh}
-.tri{display:flex;flex-direction:column;gap:1px;line-height:1.3}
-.tri .pt{font-size:12px;font-weight:500;color:var(--text1)}.tri .zh{font-size:11px;color:var(--teal)}.tri .en{display:none}
-.ti{display:inline-flex;gap:5px;align-items:baseline;flex-wrap:wrap}
-.ti .pt{font-size:13px;font-weight:500}.ti .zh{font-size:11px;color:var(--teal)}.ti .en{display:none}
-.tb{display:flex;flex-direction:column;gap:1px;align-items:center}
-.tb .pt{font-size:11px;font-weight:500}.tb .zh{font-size:10px;color:var(--teal)}.tb .en{display:none}
-.header{background:var(--bg1);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
-.header h1{font-size:16px;font-weight:600}.header p{font-size:10px;color:var(--teal);margin-top:1px}
-.hright{display:flex;align-items:center;gap:16px}
-.clock .time{font-size:22px;font-weight:300;letter-spacing:.02em}.clock .date{font-size:10px;color:var(--text2);margin-top:1px;text-align:right}
-.sync{display:flex;align-items:center;gap:5px;font-size:10px;padding:4px 10px;border-radius:20px;border:1px solid var(--border)}
-.sdot{width:6px;height:6px;border-radius:50%;background:var(--amber);animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-.nav{background:var(--bg1);border-bottom:1px solid var(--border);display:flex;padding:0 20px;overflow-x:auto;gap:2px}
-.nb{padding:10px 14px;background:transparent;border:none;border-bottom:2px solid transparent;cursor:pointer;color:var(--text2);transition:.15s;white-space:nowrap;font-family:var(--font)}
-.nb:hover{color:var(--text1)}.nb.active{color:var(--blue);border-bottom-color:var(--blue)}
-.main{padding:20px 24px;max-width:1400px;margin:0 auto}
-.tab{display:none}.tab.active{display:block}
-.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
-.g2{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:14px;margin-bottom:20px}
-.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
-.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px;margin-bottom:12px}
-.ct{margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border)}
-.kpi{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px;position:relative;overflow:hidden}
-.kpi::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%}
-.kpi.blue::before{background:var(--blue)}.kpi.red::before{background:var(--red)}.kpi.amber::before{background:var(--amber)}.kpi.green::before{background:var(--green)}.kpi.teal::before{background:var(--teal)}
-.kv{font-size:28px;font-weight:500;line-height:1;margin:8px 0 4px}
-.kpi.blue .kv{color:#93c5fd}.kpi.red .kv{color:#fca5a5}.kpi.amber .kv{color:#fcd34d}.kpi.green .kv{color:#86efac}.kpi.teal .kv{color:#5eead4}
-.ks{font-size:10px;color:var(--text2);margin-top:4px}
-.badge{font-size:10px;font-weight:500;padding:2px 8px;border-radius:20px;display:inline-block}
-.br{background:var(--red-dim);color:#fca5a5}.ba{background:var(--amber-dim);color:#fcd34d}.bg{background:var(--green-dim);color:#86efac}.bb{background:var(--blue-dim);color:#93c5fd}.bt{background:rgba(20,184,166,.15);color:#5eead4}
-.nc{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px}
-.nc.urgente{border-left:3px solid var(--red)}.nc.atencao{border-left:3px solid var(--amber)}.nc.recente{border-left:3px solid var(--green)}.nc.resolvida{border-left:3px solid var(--green);opacity:.5}
-.ncg{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:start}
-.ncd{font-size:22px;font-weight:500;text-align:right;line-height:1}
-.nc.urgente .ncd{color:#fca5a5}.nc.atencao .ncd{color:#fcd34d}.nc.recente .ncd,.nc.resolvida .ncd{color:#86efac}
-.fb{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
-.fbtn{font-size:10px;padding:4px 12px;border-radius:20px;border:1px solid var(--border2);background:transparent;cursor:pointer;color:var(--text2);transition:.15s;font-family:var(--font)}
-.fbtn:hover{color:var(--text1)}.fbtn.active{background:var(--blue);color:#fff;border-color:var(--blue)}
-.btn{padding:7px 14px;border-radius:var(--radius);border:none;cursor:pointer;font-family:var(--font);font-size:12px;transition:.15s}
-.bp{background:var(--blue);color:#fff}.bp:hover{background:var(--blue2)}
-.bgh{background:transparent;border:1px solid var(--border2);color:var(--text2)}.bgh:hover{color:var(--text1)}
-.bd{background:var(--red-dim);color:#fca5a5;border:1px solid rgba(239,68,68,.3)}
-.bsm{padding:4px 10px;font-size:10px}.btn:disabled{opacity:.4;cursor:not-allowed}
-.tbl{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}
-.tbl th{font-size:10px;color:var(--text2);text-align:left;padding:8px 10px;background:var(--bg3);border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:.04em;font-weight:500}
-.tbl td{padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:middle;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.tbl tr:last-child td{border-bottom:none}.tbl tr:hover td{background:rgba(59,130,246,.05)}
-.eqr{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}.eqr:last-child{border-bottom:none}
-.eqn{font-size:12px;font-weight:500;min-width:160px;flex-shrink:0}
-.eqb{flex:1;height:5px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden}
-.eqbf{height:100%;border-radius:3px;transition:width .5s}
-.eqnum{font-size:11px;color:var(--text2);text-align:right;min-width:90px;flex-shrink:0}
-.sn{display:flex;align-items:center;gap:10px;margin-bottom:14px}
-.sn button{width:28px;height:28px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--text1);cursor:pointer;font-size:14px;font-family:var(--font)}
-.sl{font-size:12px;color:#93c5fd;font-weight:500;min-width:220px}
-.dc{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px}
-.dh{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px}
-.dt{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:300;display:flex;align-items:center;justify-content:center;padding:16px}
-.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:22px;width:100%;max-width:520px;max-height:92vh;overflow-y:auto}
-.modal h3{font-size:14px;font-weight:600;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border)}
-.mf{margin-bottom:13px}.mf label{display:block;margin-bottom:5px}
-.mf input,.mf select,.mf textarea{width:100%;padding:8px 11px;border-radius:var(--radius);border:1px solid var(--border2);background:var(--bg3);color:var(--text1);font-size:13px;font-family:var(--font)}
-.mf textarea{resize:vertical;min-height:68px}.mf input:focus,.mf select:focus,.mf textarea:focus{outline:none;border-color:var(--blue)}
-.mbtns{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
-.uz{border:1px dashed var(--border2);border-radius:var(--radius);padding:14px;text-align:center;cursor:pointer;color:var(--text2);font-size:11px}
-.uz:hover{border-color:var(--blue);color:#93c5fd}
-.imgp{max-width:100%;max-height:120px;border-radius:6px;margin-top:8px;display:none}
-.toast{position:fixed;bottom:24px;right:24px;z-index:999;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);padding:12px 18px;font-size:12px;animation:si .2s ease;max-width:320px}
-@keyframes si{from{transform:translateY(8px);opacity:0}to{transform:translateY(0);opacity:1}}
-.toast.ok{border-left:3px solid var(--green)}.toast.err{border-left:3px solid var(--red)}
-.loading{text-align:center;padding:3rem;color:var(--text2)}
-.spinner{width:28px;height:28px;border:3px solid rgba(255,255,255,.08);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 10px}
-@keyframes spin{to{transform:rotate(360deg)}}
+:root{
+  --p:#2563eb;--ps:#dbeafe;--bg:#f1f5f9;--card:#fff;
+  --t:#1e293b;--tl:#64748b;--br:#e2e8f0;
+  --red:#ef4444;--amber:#f59e0b;--green:#10b981;--teal:#06b6d4;
+  --r:10px;--sh:0 1px 3px rgba(0,0,0,.1)
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);line-height:1.5}
 
-.sim-box{background:#1a2b42;border:1px solid #f59e0b;border-radius:8px;padding:14px 16px;margin-bottom:13px;display:none}
-.sim-box.visible{display:block}
-.sim-title{font-size:11px;font-weight:600;color:#fcd34d;margin-bottom:10px;display:flex;align-items:center;gap:6px}
-.sim-item{background:#0f1d2e;border:1px solid rgba(245,158,11,.25);border-radius:6px;padding:10px 12px;margin-bottom:8px}
-.sim-item:last-child{margin-bottom:0}
-.sim-desc{font-size:12px;font-weight:500;color:#e8eef4;margin-bottom:4px}
-.sim-meta{font-size:10px;color:#8fa3b8;margin-bottom:8px}
-.sim-pct{font-size:11px;font-weight:600;padding:2px 8px;border-radius:12px;display:inline-block;margin-bottom:8px}
-.sim-pct.alta{background:rgba(239,68,68,.2);color:#fca5a5}
-.sim-pct.media{background:rgba(245,158,11,.2);color:#fcd34d}
-.sim-acoes{display:flex;gap:6px;flex-wrap:wrap}
-.sim-btn{font-size:10px;padding:4px 12px;border-radius:6px;border:none;cursor:pointer;font-family:var(--font);font-weight:500;transition:.15s}
-.sim-unif{background:rgba(245,158,11,.2);color:#fcd34d;border:1px solid rgba(245,158,11,.4)}
-.sim-unif:hover{background:rgba(245,158,11,.4)}
-.sim-nova{background:rgba(34,197,94,.15);color:#86efac;border:1px solid rgba(34,197,94,.3)}
-.sim-nova:hover{background:rgba(34,197,94,.3)}
+/* ── Header ── */
+.hdr{background:#fff;border-bottom:1px solid var(--br);padding:.75rem 1.5rem;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;box-shadow:var(--sh)}
+.hdr-title{font-size:1.1rem;font-weight:700;color:var(--p)}
+.hdr-sub{font-size:.72rem;color:var(--tl)}
+.hdr-r{display:flex;align-items:center;gap:1rem}
+.sync{display:flex;align-items:center;gap:5px;font-size:.75rem;padding:3px 10px;background:var(--bg);border-radius:20px;border:1px solid var(--br)}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--amber)}
+.clock{text-align:right;font-size:.85rem;font-weight:600}
+.clock-d{font-size:.7rem;color:var(--tl)}
 
+/* ── Nav ── */
+.nav{background:#fff;border-bottom:1px solid var(--br);display:flex;padding:0 1.5rem;overflow-x:auto}
+.nav-btn{padding:.85rem .75rem;background:none;border:none;border-bottom:2px solid transparent;color:var(--tl);font-weight:500;cursor:pointer;white-space:nowrap;font-size:.88rem;transition:.2s;position:relative}
+.nav-btn:hover{color:var(--p)}
+.nav-btn.active{color:var(--p);border-bottom-color:var(--p)}
+.badge-cnt{background:var(--red);color:#fff;border-radius:10px;font-size:.65rem;padding:1px 6px;margin-left:4px;font-weight:700;vertical-align:middle}
 
-.dup-grupo{background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:14px;overflow:hidden}
-.dup-grupo-header{padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;border-bottom:1px solid var(--border)}
-.dup-grupo-header:hover{background:var(--bg3)}
-.dup-grupo-body{padding:14px 18px}
-.dup-nc-item{display:flex;align-items:flex-start;gap:12px;padding:10px 12px;background:var(--bg3);border-radius:8px;margin-bottom:8px;border-left:3px solid var(--border2)}
-.dup-nc-item.principal{border-left-color:var(--blue)}
-.dup-nc-item.similar{border-left-color:var(--amber)}
-.dup-nc-item.resolvida-item{border-left-color:var(--green);opacity:.7}
-.dup-acoes{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
-.tag-principal{font-size:9px;font-weight:600;padding:2px 7px;border-radius:10px;background:var(--blue-dim);color:#93c5fd;white-space:nowrap}
-.tag-similar{font-size:9px;font-weight:600;padding:2px 7px;border-radius:10px;background:var(--amber-dim);color:#fcd34d;white-space:nowrap}
-.tag-rv{font-size:9px;font-weight:600;padding:2px 7px;border-radius:10px;background:var(--green-dim);color:#86efac;white-space:nowrap}
+/* ── Layout ── */
+.wrap{max-width:1200px;margin:0 auto;padding:1.5rem}
+.pane{display:none}.pane.active{display:block}
 
-.insp-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 18px;margin-bottom:10px;display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center}
-.insp-card.com-nc{border-left:3px solid var(--red)}
-.insp-card.sem-nc{border-left:3px solid var(--green)}
-.insp-avatar{width:40px;height:40px;border-radius:50%;background:var(--blue-dim);color:#93c5fd;font-size:13px;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.insp-equip-group{background:var(--bg1);border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:16px;overflow:hidden}
-.insp-equip-header{padding:12px 18px;display:flex;align-items:center;justify-content:space-between;background:var(--bg3);border-bottom:1px solid var(--border)}
-.sni{background:var(--red-dim);color:#fca5a5}.sea{background:var(--amber-dim);color:#fcd34d}.srv{background:var(--green-dim);color:#86efac}
-@media(max-width:900px){.g4{grid-template-columns:repeat(2,1fr)}.g2,.g3{grid-template-columns:1fr}}
-@media(max-width:500px){.g4{grid-template-columns:1fr}.main{padding:12px}.ncg{grid-template-columns:1fr}}
+/* ── KPIs ── */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1.5rem}
+.kpi{background:#fff;border-radius:var(--r);border:1px solid var(--br);padding:1.25rem 1.5rem;border-left:4px solid var(--br);box-shadow:var(--sh)}
+.kpi.blue{border-left-color:var(--p)}.kpi.red{border-left-color:var(--red)}
+.kpi.amber{border-left-color:var(--amber)}.kpi.green{border-left-color:var(--green)}.kpi.teal{border-left-color:var(--teal)}
+.kpi-val{font-size:1.75rem;font-weight:700;margin:.2rem 0}
+.kpi-lbl{font-size:.78rem;color:var(--tl);font-weight:500}
+.kpi-sub{font-size:.7rem;color:var(--tl)}
+
+/* ── Cards genéricos ── */
+.card{background:#fff;border-radius:var(--r);border:1px solid var(--br);padding:1.25rem;margin-bottom:1rem;box-shadow:var(--sh)}
+.card-title{font-size:.92rem;font-weight:600;margin-bottom:1rem;padding-bottom:.75rem;border-bottom:1px solid var(--br)}
+
+/* ── Grid 2 colunas ── */
+.g2{display:grid;grid-template-columns:3fr 2fr;gap:1rem;margin-bottom:1rem}
+
+/* ── Sub-tabs (NCs) ── */
+.sub-tabs{display:flex;gap:.4rem;margin-bottom:1.25rem;background:#fff;padding:.45rem;border-radius:var(--r);border:1px solid var(--br);box-shadow:var(--sh)}
+.sub-tab{flex:1;padding:.55rem;border:none;background:none;border-radius:6px;cursor:pointer;font-weight:500;font-size:.84rem;color:var(--tl);transition:.2s}
+.sub-tab:hover{background:var(--bg)}
+.sub-tab.active{background:var(--p);color:#fff}
+.sub-tab .cnt{font-size:.7rem;opacity:.75;margin-left:4px}
+
+/* ── NC itens ── */
+.nc-item{background:#fff;border-radius:8px;border:1px solid var(--br);border-left:4px solid var(--br);padding:1rem 1.25rem;margin-bottom:.6rem;display:flex;justify-content:space-between;align-items:center;box-shadow:var(--sh);transition:box-shadow .2s}
+.nc-item:hover{box-shadow:0 4px 12px rgba(0,0,0,.1)}
+.nc-item.urgente{border-left-color:var(--red)}.nc-item.atencao{border-left-color:var(--amber)}
+.nc-item.recente{border-left-color:var(--p)}.nc-item.resolved{border-left-color:var(--green);opacity:.85}
+.nc-desc{font-size:.9rem;font-weight:600;margin-bottom:.2rem}
+.nc-meta{font-size:.74rem;color:var(--tl);line-height:1.6}
+.nc-days{text-align:center;margin-right:.75rem;flex-shrink:0}
+.nc-days-n{font-size:1.35rem;font-weight:700}
+.nc-days-l{font-size:.6rem;color:var(--tl);text-transform:uppercase}
+
+/* ── Badges ── */
+.badge{padding:2px 8px;border-radius:5px;font-size:.7rem;font-weight:600;display:inline-block}
+.badge.r{background:#fee2e2;color:#b91c1c}
+.badge.a{background:#fef3c7;color:#92400e}
+.badge.g{background:#d1fae5;color:#065f46}
+.badge.b{background:var(--ps);color:#1e40af}
+
+/* ── Checklists ── */
+.equip-group{background:#fff;border-radius:var(--r);border:1px solid var(--br);margin-bottom:1rem;overflow:hidden;box-shadow:var(--sh)}
+.equip-hdr{padding:.85rem 1.1rem;background:var(--bg);display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--br)}
+.equip-name{font-weight:600;font-size:.9rem}
+.equip-body{padding:.5rem .75rem}
+.cl-card{border-radius:7px;border:1px solid var(--br);padding:.8rem 1rem;margin-bottom:.4rem;display:flex;align-items:center;gap:.85rem}
+.cl-card.com-nc{border-left:3px solid var(--red)}.cl-card.sem-nc{border-left:3px solid var(--green)}
+.cl-av{width:36px;height:36px;border-radius:50%;background:var(--ps);color:var(--p);font-weight:700;font-size:.78rem;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.cl-info{flex:1;min-width:0}
+.cl-name{font-size:.88rem;font-weight:600}
+.cl-detail{font-size:.73rem;color:var(--tl)}
+.cl-comment{font-size:.72rem;color:var(--amber);font-style:italic;margin-top:2px}
+.cl-ncs{flex-shrink:0;text-align:right}
+.cl-nc-list{font-size:.7rem;color:var(--tl);margin-top:.25rem;max-width:180px;text-align:right;line-height:1.5}
+
+/* ── DSS ── */
+.dss-card{background:#fff;border-radius:8px;border:1px solid var(--br);padding:1rem 1.25rem;margin-bottom:.6rem;box-shadow:var(--sh)}
+.dss-date{font-size:.73rem;color:var(--tl);margin-bottom:.15rem}
+.dss-tema{font-size:.92rem;font-weight:600;margin-bottom:.2rem}
+.dss-meta{font-size:.76rem;color:var(--tl)}
+
+/* ── Filter bar ── */
+.fbar{display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap}
+.fbtn{padding:5px 13px;border-radius:20px;border:1px solid var(--br);background:#fff;cursor:pointer;font-size:.79rem;font-weight:500;color:var(--tl);transition:.2s}
+.fbtn:hover{border-color:var(--p);color:var(--p)}
+.fbtn.active{background:var(--p);color:#fff;border-color:var(--p)}
+
+/* ── Buttons ── */
+.btn{padding:7px 14px;border-radius:6px;border:1px solid var(--br);cursor:pointer;font-family:inherit;font-size:.82rem;font-weight:500;transition:.2s}
+.btn-p{background:var(--p);color:#fff;border:none}.btn-p:hover{opacity:.9}
+.btn-sm{padding:5px 10px;font-size:.78rem}
+.btn-o{background:#fff;color:var(--t)}
+
+/* ── Modal/Overlay ── */
+.overlay{position:fixed;inset:0;background:rgba(15,23,42,.65);display:none;align-items:center;justify-content:center;z-index:1000;backdrop-filter:blur(3px)}
+.modal{background:#fff;padding:1.75rem;border-radius:12px;width:90%;max-width:480px;max-height:90vh;overflow-y:auto}
+.modal-title{font-size:1rem;font-weight:600;margin-bottom:1.25rem}
+.form-g{margin-bottom:.9rem}
+.form-g label{display:block;font-size:.79rem;font-weight:600;margin-bottom:4px;color:var(--tl)}
+.form-ctrl{width:100%;padding:9px 10px;border:1px solid var(--br);border-radius:6px;font-family:inherit;font-size:.875rem}
+.form-ctrl:focus{outline:none;border-color:var(--p)}
+.modal-foot{display:flex;justify-content:flex-end;gap:8px;margin-top:1.25rem}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:1.5rem;right:1.5rem;padding:.9rem 1.25rem;background:#fff;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.15);z-index:2000;border-left:4px solid var(--p);font-size:.875rem;animation:su .3s ease}
+.toast.err{border-left-color:var(--red)}
+@keyframes su{from{transform:translateY(8px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+/* ── Empty state ── */
+.empty{text-align:center;padding:3rem;color:var(--tl)}
+.empty-icon{font-size:2.5rem;margin-bottom:.6rem}
+
+/* ── Chart ── */
+.chart-wrap{position:relative;height:210px}
+
+/* ── Responsive ── */
+@media(max-width:768px){
+  .g2{grid-template-columns:1fr}
+  .kpis{grid-template-columns:1fr 1fr}
+  .hdr{flex-direction:column;gap:.5rem;text-align:center}
+}
 </style>
 </head>
 <body>
-<div class="header">
-  <div><h1><span class="ti"><span class="pt">Segurança do Trabalho</span><span class="zh">安全管理</span></span></h1>
-  <p>Sistema integrado de inspeções · 综合检查系统</p></div>
-  <div class="hright">
-    <div class="sync"><span class="sdot" id="sdot"></span><span id="stxt" style="color:var(--text2);font-size:10px">Conectando...</span></div>
-    <div class="clock"><div class="time" id="hora">--:--</div><div class="date" id="dstr"></div></div>
+
+<!-- HEADER -->
+<header class="hdr">
+  <div>
+    <div class="hdr-title">🛡️ Segurança do Trabalho</div>
+    <div class="hdr-sub">Monitoramento em Tempo Real</div>
   </div>
-</div>
-<div class="nav">
-  <button class="nb active" onclick="aba('g',this)"><span class="tb"><span class="pt">Visão Geral</span><span class="zh">总览</span></span></button>
-  <button class="nb" onclick="aba('n',this)"><span class="tb"><span class="pt">Não Conformidades</span><span class="zh">不合格项</span></span></button>
-  <button class="nb" onclick="aba('t',this)"><span class="tb"><span class="pt">Tratativas</span><span class="zh">处理措施</span></span></button>
-  <button class="nb" onclick="aba('dup',this)" id="btn-dup"><span class="tb"><span class="pt">Duplicatas IA</span><span class="zh">AI重复分析</span></span></button>
-  <button class="nb" onclick="aba('d',this)"><span class="tb"><span class="pt">DSS</span><span class="zh">安全对话</span></span></button>
-  <button class="nb" onclick="aba('i',this)"><span class="tb"><span class="pt">Inspeções do Dia</span><span class="zh">今日检查</span></span></button>
-  <button class="nb" onclick="aba('s',this)"><span class="tb"><span class="pt">Relatório Semanal</span><span class="zh">周报</span></span></button>
-</div>
-<div class="main">
-  <div id="tg" class="tab active">
-    <div class="g4" id="kg"></div>
+  <div class="hdr-r">
+    <div class="sync"><div class="sync-dot" id="sdot"></div><span id="stxt">Conectando...</span></div>
+    <div><div class="clock" id="hora">00:00</div><div class="clock-d" id="dstr">...</div></div>
+  </div>
+</header>
+
+<!-- NAV -->
+<nav class="nav">
+  <button class="nav-btn active" onclick="aba('g',this)">Dashboard</button>
+  <button class="nav-btn" onclick="aba('cl',this)">Checklists</button>
+  <button class="nav-btn" onclick="aba('nc',this)">Não Conformidades <span id="cnt-nc" class="badge-cnt" style="display:none">0</span></button>
+  <button class="nav-btn" onclick="aba('d',this)">DSS</button>
+</nav>
+
+<main class="wrap">
+
+  <!-- ── DASHBOARD ── -->
+  <div id="tg" class="pane active">
+    <div class="kpis" id="kpis-dash"></div>
     <div class="g2">
-      <div class="card"><div class="ct"><span class="tri"><span class="pt">NCs por equipamento</span><span class="zh">各设备不合格项</span></span></div><div id="el"></div></div>
-      <div class="card"><div class="ct"><span class="tri"><span class="pt">Status das tratativas</span><span class="zh">整改状态</span></span></div><div style="position:relative;height:160px"><canvas id="chs"></canvas></div><div id="chl" style="display:flex;gap:10px;margin-top:10px;font-size:10px;color:var(--text2);flex-wrap:wrap"></div></div>
-    </div>
-    <div class="g3" id="kdr"></div>
-  </div>
-  <div id="tn" class="tab"><div class="fb" id="nfb"></div><div id="nl"><div class="loading"><div class="spinner"></div></div></div></div>
-  <div id="tt" class="tab">
-    <div class="fb">
-      <button class="fbtn active" onclick="ft('todos',this)"><span class="tb"><span class="pt">Todas</span><span class="zh">全部</span></span></button>
-      <button class="fbtn" onclick="ft('nao-iniciada',this)"><span class="tb"><span class="pt">Não iniciadas</span><span class="zh">未开始</span></span></button>
-      <button class="fbtn" onclick="ft('em-andamento',this)"><span class="tb"><span class="pt">Em andamento</span><span class="zh">进行中</span></span></button>
-      <button class="fbtn" onclick="ft('resolvida',this)"><span class="tb"><span class="pt">Resolvidas</span><span class="zh">已解决</span></span></button>
-    </div>
-    <div class="card" style="padding:0;overflow-x:auto"><table class="tbl"><thead><tr>
-      <th style="width:16%"><span class="tri"><span class="pt">Equipamento</span><span class="zh">设备</span></span></th>
-      <th style="width:24%"><span class="tri"><span class="pt">Problema</span><span class="zh">问题</span></span></th>
-      <th style="width:11%"><span class="tri"><span class="pt">Status</span><span class="zh">状态</span></span></th>
-      <th style="width:10%"><span class="tri"><span class="pt">Prazo</span><span class="zh">期限</span></span></th>
-      <th style="width:14%"><span class="tri"><span class="pt">Responsável</span><span class="zh">负责人</span></span></th>
-      <th style="width:20%"><span class="tri"><span class="pt">Ação tomada</span><span class="zh">采取措施</span></span></th>
-      <th style="width:5%"></th>
-    </tr></thead><tbody id="tb"></tbody></table></div>
-  </div>
-  <div id="td" class="tab">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
-      <span class="tri"><span class="pt">Diálogos de Segurança registrados</span><span class="zh">已记录安全对话</span></span>
-      <button class="btn bp" onclick="abrirDSS()"><span class="tb"><span class="pt">+ Novo DSS</span><span class="zh">+ 新增对话</span></span></button>
-    </div>
-    <div class="g3" id="kd"></div>
-    <div id="dl"><div class="loading"><div class="spinner"></div></div></div>
-  </div>
-  <div id="ti" class="tab">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
-      <div>
-        <div style="font-size:15px;font-weight:500;margin-bottom:4px">
-          <span class="pt">Inspeções realizadas</span> · <span class="zh" style="color:var(--teal)">今日检查记录</span>
-        </div>
-        <div style="font-size:11px;color:var(--text2)" id="insp-subtitulo">Carregando...</div>
+      <div class="card">
+        <div class="card-title">NCs por Equipamento</div>
+        <div id="eq-lista"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Status das NCs</div>
+        <div class="chart-wrap"><canvas id="ch-status"></canvas></div>
+        <div id="ch-leg" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:.75rem;font-size:.74rem"></div>
       </div>
     </div>
-    <div class="g4" id="insp-kpis"></div>
-    <div class="fb" id="insp-fbar" style="margin-bottom:14px"></div>
-    <div id="insp-lista"><div class="loading"><div class="spinner"></div></div></div>
-  </div>
-
-    <div id="ts" class="tab">
-    <div class="sn"><button onclick="ns(-1)">‹</button><span class="sl" id="sl"></span><button onclick="ns(1)">›</button>
-      <button class="btn bgh bsm" style="margin-left:12px" onclick="window.print()"><span class="tb"><span class="pt">Exportar</span><span class="zh">导出</span></span></button>
-    </div>
-    <div class="g4" id="ks"></div>
-    <div class="card" style="margin-bottom:14px"><div class="ct"><span class="tri"><span class="pt">NCs por equipamento na semana</span><span class="zh">本周各设备不合格项</span></span></div><div style="position:relative;height:180px"><canvas id="chsem"></canvas></div></div>
-    <div class="card" style="padding:0;overflow-x:auto"><table class="tbl"><thead><tr>
-      <th style="width:10%"><span class="tri"><span class="pt">Data</span><span class="zh">日期</span></span></th>
-      <th style="width:18%"><span class="tri"><span class="pt">Equipamento</span><span class="zh">设备</span></span></th>
-      <th style="width:28%"><span class="tri"><span class="pt">Problema</span><span class="zh">问题</span></span></th>
-      <th style="width:14%"><span class="tri"><span class="pt">Registrado por</span><span class="zh">记录人</span></span></th>
-      <th style="width:12%"><span class="tri"><span class="pt">Status</span><span class="zh">状态</span></span></th>
-      <th style="width:18%"><span class="tri"><span class="pt">Ação</span><span class="zh">措施</span></span></th>
-    </tr></thead><tbody id="sb"></tbody></table></div>
-  </div>
-</div>
-
-  <!-- ABA DUPLICATAS IA -->
-  <div id="tdup" class="tab">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
-      <div>
-        <div style="font-size:15px;font-weight:500;margin-bottom:4px">
-          <span class="pt">Análise de Duplicatas por IA</span> · <span class="zh" style="color:var(--teal)">AI重复项分析</span>
-        </div>
-        <div style="font-size:11px;color:var(--text2)">
-          <span class="pt">Varredura automática em todas as NCs abertas e encerradas</span> · <span class="zh" style="color:var(--text3)">自动扫描所有开放和已关闭的不合格项</span>
-        </div>
-      </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn bp" id="btn-varrer" onclick="executarVarredura()">
-          <span class="pt">🔍 Iniciar varredura</span> · <span class="zh">开始扫描</span>
-        </button>
-        <button class="btn bgh" onclick="diagnosticarUnificadas()">
-          🔧 Diagnóstico
-        </button>
-      </div>
-    </div>
-
-    <!-- Status da varredura -->
-    <div id="dup-status" style="display:none;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin-bottom:16px">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-        <div class="spinner" style="width:18px;height:18px;border-width:2px;flex-shrink:0"></div>
-        <span style="font-size:13px;font-weight:500" id="dup-status-txt">Preparando varredura...</span>
-      </div>
-      <div style="background:var(--bg3);border-radius:6px;height:6px;overflow:hidden">
-        <div id="dup-progress" style="height:100%;background:var(--blue);border-radius:6px;width:0%;transition:width .4s"></div>
-      </div>
-      <div style="font-size:10px;color:var(--text2);margin-top:6px" id="dup-progress-txt">0 de 0 NCs analisadas</div>
-    </div>
-
-    <!-- Resumo -->
-    <div id="dup-resumo" style="display:none" class="g3" ></div>
-
-    <!-- Grupos de duplicatas -->
-    <div id="dup-resultado" style="margin-top:4px"></div>
-
-    <!-- Estado inicial -->
-    <div id="dup-inicial" style="text-align:center;padding:3rem;color:var(--text2)">
-      <div style="font-size:40px;margin-bottom:16px">🤖</div>
-      <div style="font-size:14px;font-weight:500;margin-bottom:8px">
-        <span class="pt">IA pronta para varredura</span> · <span class="zh" style="color:var(--teal)">AI准备好扫描</span>
-      </div>
-      <div style="font-size:12px;color:var(--text3)">
-        <span class="pt">Clique em "Iniciar varredura" para identificar NCs duplicadas ou semelhantes</span><br>
-        <span class="zh" style="color:var(--text3)">点击"开始扫描"以识别重复或相似的不合格项</span>
-      </div>
+    <div class="card">
+      <div class="card-title">Inspeções de Hoje</div>
+      <div id="dash-hoje"></div>
     </div>
   </div>
 
-<!-- MODAL NC -->
-<div class="overlay" id="mnc" style="display:none" onclick="if(event.target===this)fm('mnc')">
+  <!-- ── CHECKLISTS ── -->
+  <div id="tcl" class="pane">
+    <div class="fbar" id="cl-fbar"></div>
+    <div class="kpis" id="cl-kpis"></div>
+    <div id="cl-lista"></div>
+  </div>
+
+  <!-- ── NÃO CONFORMIDADES ── -->
+  <div id="tnc" class="pane">
+    <div class="sub-tabs">
+      <button class="sub-tab active" onclick="ncTab('nova',this)">Novas <span class="cnt" id="cnt-nova">0</span></button>
+      <button class="sub-tab" onclick="ncTab('pend',this)">Pendentes <span class="cnt" id="cnt-pend">0</span></button>
+      <button class="sub-tab" onclick="ncTab('resv',this)">Resolvidas <span class="cnt" id="cnt-resv">0</span></button>
+    </div>
+    <div id="nc-lista"></div>
+  </div>
+
+  <!-- ── DSS ── -->
+  <div id="td" class="pane">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem">
+      <h3 style="font-size:1rem;font-weight:600">Diálogos de Segurança</h3>
+      <button class="btn btn-p" onclick="abrirDSS()">+ Novo DSS</button>
+    </div>
+    <div class="kpis" id="kpis-dss"></div>
+    <div id="dss-lista"></div>
+  </div>
+
+</main>
+
+<!-- MODAL: Tratativa NC -->
+<div class="overlay" id="mnc" onclick="if(event.target===this)fm('mnc')">
   <div class="modal">
-    <h3 id="mtit"></h3>
-    
-    <div id="sim-box" class="sim-box">
-      <div class="sim-title">⚠ <span class="tri" style="display:inline"><span class="pt">NCs semelhantes encontradas</span> · <span class="zh">发现相似不合格项</span></span></div>
-      <div id="sim-lista"></div>
-      <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(245,158,11,.2);font-size:11px;color:#8fa3b8">
-        <span class="pt">Escolha uma opção acima ou</span> <span class="zh">选择上方选项或</span>
-        <button class="sim-btn sim-nova" onclick="simContinuar()" style="margin-left:6px">
-          <span class="pt">Cadastrar mesmo assim</span> · <span class="zh">仍然注册</span>
-        </button>
-      </div>
+    <div class="modal-title" id="mtit">Tratativa da NC</div>
+    <div class="form-g">
+      <label>Status</label>
+      <select id="mst" class="form-ctrl">
+        <option value="nao-iniciada">Não Iniciada</option>
+        <option value="em-andamento">Em Andamento</option>
+        <option value="resolvida">Resolvida</option>
+      </select>
     </div>
-    <div class="mf"><label><span class="ti"><span class="pt">Status</span><span class="zh">状态</span></span></label>
-      <select id="mst"><option value="nao-iniciada">Não iniciada · 未开始 · </option><option value="em-andamento">Em andamento · 进行中 · </option><option value="resolvida">Resolvida · 已解决 · </option></select></div>
-    <div class="mf"><label><span class="ti"><span class="pt">Responsável</span><span class="zh">负责人</span></span></label><input type="text" id="mre" placeholder="Nome · 姓名"></div>
-    <div class="mf"><label><span class="ti"><span class="pt">Prazo</span><span class="zh">截止日期</span></span></label><input type="date" id="mpr"></div>
-    <div class="mf"><label><span class="ti"><span class="pt">Ação tomada</span><span class="zh">采取措施</span></span></label><textarea id="mac" placeholder="Descreva a ação · 描述措施..." oninput="verificarSim(this.value)""></textarea></div>
-    <div class="mf"><label><span class="ti"><span class="pt">Foto / evidência</span><span class="zh">照片/证据</span></span></label>
-      <div class="uz" onclick="document.getElementById('mfo').click()"><span class="ti"><span class="pt">Clique para anexar</span><span class="zh">点击上传</span></span><input type="file" id="mfo" accept="image/*" style="display:none" onchange="pf(this)"></div>
-      <img id="ip" class="imgp"></div>
-    <div class="mbtns">
-      <button class="btn bgh" onclick="fm('mnc')"><span class="tb"><span class="pt">Cancelar</span><span class="zh">取消</span></span></button>
-      <button class="btn bp" id="bsnc" onclick="saveTrat()"><span class="tb"><span class="pt">Salvar</span><span class="zh">保存</span></span></button>
+    <div class="form-g"><label>Responsável</label><input type="text" id="mre" class="form-ctrl" placeholder="Nome do responsável"></div>
+    <div class="form-g"><label>Prazo</label><input type="date" id="mpr" class="form-ctrl"></div>
+    <div class="form-g"><label>Ação Tomada</label><textarea id="mac" class="form-ctrl" rows="3" placeholder="Descreva a ação..."></textarea></div>
+    <div class="modal-foot">
+      <button class="btn btn-o" onclick="fm('mnc')">Cancelar</button>
+      <button class="btn btn-p" id="bsnc" onclick="saveTrat()">Salvar</button>
     </div>
   </div>
 </div>
 
-<!-- MODAL DSS -->
-<div class="overlay" id="mdss" style="display:none" onclick="if(event.target===this)fm('mdss')">
+<!-- MODAL: DSS -->
+<div class="overlay" id="mdss" onclick="if(event.target===this)fm('mdss')">
   <div class="modal">
-    <h3><span class="ti"><span class="pt">Novo DSS</span><span class="zh">新安全对话</span></span></h3>
-    <div class="mf"><label><span class="ti"><span class="pt">Data</span><span class="zh">日期</span></span></label><input type="date" id="dd"></div>
-    <div class="mf"><label><span class="ti"><span class="pt">Tema principal</span><span class="zh">主要主题</span></span></label><input type="text" id="dt" placeholder="Tema · 主题"></div>
-    <div class="mf"><label><span class="ti"><span class="pt">Setor / Área</span><span class="zh">部门/区域</span></span></label><input type="text" id="dse"></div>
-    <div class="mf"><label><span class="ti"><span class="pt">Responsável</span><span class="zh">负责人</span></span></label><input type="text" id="dr" placeholder="Nome · 姓名"></div>
-    <div class="mf"><label><span class="ti"><span class="pt">Nº de participantes</span><span class="zh">参与人数</span></span></label><input type="number" id="dp" min="1" placeholder="0"></div>
-    <div class="mf"><label><span class="ti"><span class="pt">Assuntos discutidos</span><span class="zh">讨论内容</span></span></label><textarea id="da" placeholder="Descreva os assuntos · 描述讨论内容..."></textarea></div>
-    <div class="mf"><label><span class="ti"><span class="pt">Observações</span><span class="zh">备注</span></span></label><textarea id="do"></textarea></div>
-    <div class="mbtns">
-      <button class="btn bgh" onclick="fm('mdss')"><span class="tb"><span class="pt">Cancelar</span><span class="zh">取消</span></span></button>
-      <button class="btn bp" id="bsdss" onclick="saveDSS()"><span class="tb"><span class="pt">Registrar DSS</span><span class="zh">记录对话</span></span></button>
+    <div class="modal-title">Novo Registro de DSS</div>
+    <div class="form-g"><label>Data</label><input type="date" id="dd" class="form-ctrl"></div>
+    <div class="form-g"><label>Tema</label><input type="text" id="dt" class="form-ctrl" placeholder="Tema do diálogo"></div>
+    <div class="form-g"><label>Setor</label><input type="text" id="dse" class="form-ctrl" placeholder="Setor"></div>
+    <div class="form-g"><label>Responsável</label><input type="text" id="dr" class="form-ctrl" placeholder="Quem conduziu"></div>
+    <div class="form-g"><label>Nº Participantes</label><input type="number" id="dp" class="form-ctrl" placeholder="0"></div>
+    <div class="form-g"><label>Assuntos Abordados</label><textarea id="da" class="form-ctrl" rows="3" placeholder="Tópicos discutidos..."></textarea></div>
+    <div class="modal-foot">
+      <button class="btn btn-o" onclick="fm('mdss')">Cancelar</button>
+      <button class="btn btn-p" id="bsdss" onclick="saveDSS()">Registrar</button>
     </div>
   </div>
 </div>
 
 <script>
 // ══ CONFIGURAÇÃO ══════════════════════════════════════════════
-// Suas credenciais do Firebase — obtenha em:
-// console.firebase.google.com → Configurações → Seus apps → Web
 const FC = {
   apiKey:            "COLE_SUA_API_KEY_AQUI",
   authDomain:        "seguranca-trabalho-80ff4.firebaseapp.com",
@@ -326,954 +266,478 @@ const FC = {
   messagingSenderId: "COLE_SEU_SENDER_ID_AQUI",
   appId:             "COLE_SEU_APP_ID_AQUI"
 };
-const ADMIN_KEY = "seguranca2024"; // Troque por uma senha sua
+const ADMIN_KEY = "seguranca2024";
 const API_URL   = "https://script.google.com/macros/s/AKfycbwuwMSWd3FIuV7CDFS13xpzZ_jNA5bxRJYGutHeYe5ufN0EqIMbz80KDwJylyYZAUQ_/exec";
 // ══════════════════════════════════════════════════════════════
 
-let db=null,G={ncsUnicas:[],equipamentos:[],totalInspecoes:0},T={},DL=[],SO=0,NCA=null,isAdmin=false,chs=null,chsem=null;
+let db = null;
+let G  = { ncsUnicas:[], equipamentos:[], totalInspecoes:0, inspecoesHoje:[], inspecoesSemana:[] };
+let T  = {}, DL = [], NCA = null, isAdmin = false;
+let _chStatus = null, _ncTab = 'nova', _clFiltro = 'hoje';
 
-try{firebase.initializeApp(FC);db=firebase.database();}catch(e){console.warn("Firebase não configurado");}
+try { firebase.initializeApp(FC); db = firebase.database(); } catch(e) { console.warn("Firebase não configurado"); }
+isAdmin = new URLSearchParams(window.location.search).get('admin') === ADMIN_KEY;
 
-isAdmin=new URLSearchParams(window.location.search).get('admin')===ADMIN_KEY;
+// ── Relógio ──────────────────────────────────────────────────
+function tick() {
+  const n = new Date();
+  document.getElementById('hora').textContent = n.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('dstr').textContent = n.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'short'});
+}
+tick(); setInterval(tick, 60000);
 
-function tick(){const n=new Date();document.getElementById('hora').textContent=n.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});document.getElementById('dstr').textContent=n.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'short',year:'numeric'});}
-tick();setInterval(tick,30000);
+// ── Sync badge ───────────────────────────────────────────────
+function setSS(s) {
+  const dot = document.getElementById('sdot'), txt = document.getElementById('stxt');
+  const m = { ok:{c:'var(--green)',t:'Sincronizado'}, loading:{c:'var(--amber)',t:'Conectando'}, demo:{c:'var(--amber)',t:'Modo Demo'} };
+  const e = m[s] || m.loading;
+  dot.style.background = e.c; txt.textContent = e.t;
+}
 
-function aba(id,btn){
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
-  document.getElementById('t'+id).classList.add('active');
+// ── Navegação ────────────────────────────────────────────────
+function aba(id, btn) {
+  document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('t' + id).classList.add('active');
   btn.classList.add('active');
-  if(id==='s') rSem();
-  if(id==='d') rDSS();
-  if(id==='i'){
-    // Se dados já carregados, renderiza imediatamente
-    if(G.inspecoesHoje && G.inspecoesHoje.length > 0){
-      renderInspecoes('hoje');
-    } else {
-      // Mostra loading e aguarda buscarAPI completar
-      document.getElementById('insp-lista').innerHTML='<div class="loading"><div class="spinner"></div><p style="color:var(--text2);margin-top:8px">Carregando inspeções...</p></div>';
-      // Tenta buscar novamente se dados vazios
-      buscar().then(()=>renderInspecoes('hoje'));
-    }
-  }
+  if (id === 'cl') rCL(_clFiltro);
+  if (id === 'nc') rNC(_ncTab);
+  if (id === 'd')  rDSS();
 }
 
-function setSS(s){const d=document.getElementById('sdot'),t=document.getElementById('stxt');const m={ok:{c:'#22c55e',t:'Sincronizado · 已同步'},loading:{c:'#f59e0b',t:'Conectando · 连接中'},demo:{c:'#f59e0b',t:'Demonstração · 演示'}};const e=m[s]||m.loading;d.style.background=e.c;t.textContent=e.t;}
+// ── Chave NC ─────────────────────────────────────────────────
+function nk(nc) { return (nc.equipamento + '__' + nc.itemCurto).replace(/[^a-zA-Z0-9_]/g,'_').slice(0,120); }
+function st(nc) { return (T[nk(nc)] || {}).status || 'nao-iniciada'; }
 
-function iniciar(){
-  if(!db){G=demo();rTudo();setSS('demo');return;}
+// ── Inicialização ─────────────────────────────────────────────
+function iniciar() {
+  if (!db) { G = demo(); rTudo(); setSS('demo'); return; }
   setSS('loading');
-  db.ref('tratativas').on('value',s=>{
-    T=s.val()||{};
-    if(G.ncsUnicas.length){
-      rTudo();
-      // Garante que o painel de NCs seja re-renderizado com filtros atualizados
-      const abaAtiva=document.querySelector('.nb.active');
-      if(abaAtiva&&abaAtiva.textContent.includes('Conformidades')){
-        rNCs(G.ncsUnicas,'todos');
-      }
-    }
+  db.ref('tratativas').on('value', s => {
+    T = s.val() || {};
+    if (G.ncsUnicas.length) rTudo();
   });
-  db.ref('dss').on('value',s=>{const r=s.val()||{};DL=Object.entries(r).map(([id,v])=>({id,...v})).sort((a,b)=>b.data.localeCompare(a.data));rDK();if(document.getElementById('td').classList.contains('active'))rDSS();});
-  buscar();setInterval(buscar,5*60*1000);
-}
-
-async function buscar(){
-  try{
-    const r=await fetch(API_URL+'?_='+Date.now());
-    if(!r.ok)throw new Error();
-    const d=await r.json();
-    if(d.erro)throw new Error();
-    G=d;
-    // Garante arrays mesmo que venham vazios
-    if(!G.inspecoesHoje)   G.inspecoesHoje=[];
-    if(!G.inspecoesSemana) G.inspecoesSemana=[];
-    rTudo();
-    setSS('ok');
-    // Atualiza aba de inspeções se estiver aberta
-    if(document.getElementById('ti')&&document.getElementById('ti').classList.contains('active')){
-      renderInspecoes(_filtroInsp||'hoje');
-    }
-  }catch(e){
-    setSS(G.ncsUnicas.length?'ok':'demo');
-    if(!G.ncsUnicas.length){G=demo();G.inspecoesHoje=[];G.inspecoesSemana=[];rTudo();}
-  }
-}
-
-function nk(nc){return(nc.equipamento+'__'+nc.itemCurto).replace(/[^a-zA-Z0-9_]/g,'_').slice(0,120);}
-function st(nc){return(T[nk(nc)]||{}).status||'nao-iniciada';}
-
-function rTudo(){
-  const ncs=G.ncsUnicas||[],ab=ncs.filter(n=>st(n)!=='resolvida'&&!ehUnificada(n)),rv=ncs.filter(n=>st(n)==='resolvida'&&!ehUnificada(n)),urg=ab.filter(n=>n.urgencia==='urgente'),ant=ab[0];
-  document.getElementById('kg').innerHTML=[
-    {c:'blue',pt:'Inspeções realizadas',zh:'检查次数',en:'Inspections done',v:G.totalInspecoes,s:(G.equipamentos||[]).length+' equip.'},
-    {c:'red',pt:'NCs únicas em aberto',zh:'未解决不合格项',en:'Open unique NCs',v:ab.length,s:urg.length+' urgentes'},
-    {c:'amber',pt:'Mais antiga sem resolver',zh:'最长未解决',en:'Oldest unresolved',v:ant?ant.diasEmAberto+'d':'—',s:ant?ant.equipamento:''},
-    {c:'green',pt:'NCs resolvidas',zh:'已解决项',en:' NCs',v:rv.length,s:'no período'},
-  ].map(k=>`<div class="kpi ${k.c}"><div><span class="tri"><span class="pt">${k.pt}</span><span class="zh">${k.zh}</span></span></div><div class="kv">${k.v}</div><div class="ks">${k.s}</div></div>`).join('');
-  rEq();rGS(ncs);rFN();rNCs(ncs,'todos');rTr('todos');rDK();
-}
-
-function rEq(){
-  const eq=G.equipamentos||[];
-  if(!eq.length){document.getElementById('el').innerHTML='';return;}
-  const mx=Math.max(...eq.map(e=>e.ncsUnicas),1);
-
-  // Separa equipamentos de inspeções setoriais
-  const equips   = eq.filter(e=>e.tipo!=='setorial');
-  const setoriais = eq.filter(e=>e.tipo==='setorial');
-
-  const renderLinha = (e) => {
-    const p=Math.round(e.ncsUnicas/mx*100),c=e.ncsUnicas===0?'#22c55e':e.ncsUnicas<=2?'#f59e0b':'#ef4444';
-    const nomeExib = e.nome.replace('Inspeção Setorial — ','').replace('Inspeção — ','');
-    return `<div class="eqr"><div class="eqn" title="${e.nome}">${nomeExib}</div><div class="eqb"><div class="eqbf" style="width:${p}%;background:${c}"></div></div><div class="eqnum"><span style="color:${c};font-weight:500">${e.ncsUnicas} NCs</span> · ${e.inspecoes} insp.</div></div>`;
-  };
-
-  let html = '';
-  if(equips.length){
-    html += `<div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px"><span class="pt">Equipamentos</span> · <span class="zh">设备</span></div>`;
-    html += equips.sort((a,b)=>b.ncsUnicas-a.ncsUnicas).map(renderLinha).join('');
-  }
-  if(setoriais.length){
-    html += `<div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin:12px 0 6px"><span class="pt">Inspeções setoriais</span> · <span class="zh">区域检查</span></div>`;
-    html += setoriais.sort((a,b)=>b.ncsUnicas-a.ncsUnicas).map(renderLinha).join('');
-  }
-
-  document.getElementById('el').innerHTML = html;
-}
-
-function rGS(ncs){const ni=ncs.filter(n=>st(n)==='nao-iniciada').length,ea=ncs.filter(n=>st(n)==='em-andamento').length,rv=ncs.filter(n=>st(n)==='resolvida').length;if(chs)chs.destroy();chs=new Chart(document.getElementById('chs'),{type:'doughnut',data:{labels:['Não iniciada','Em andamento','Resolvida'],datasets:[{data:[ni,ea,rv],backgroundColor:['#ef4444','#f59e0b','#22c55e'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:false}}}});document.getElementById('chl').innerHTML=[{c:'#ef4444',pt:'Não iniciada',zh:'未开始',en:'',n:ni},{c:'#f59e0b',pt:'Em andamento',zh:'进行中',en:'',n:ea},{c:'#22c55e',pt:'Resolvida',zh:'已解决',en:'',n:rv}].map(x=>`<span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:${x.c};display:inline-block"></span><span class="ti"><span class="pt">${x.pt}</span><span class="zh">${x.zh}</span></span><strong style="color:${x.c}">(${x.n})</strong></span>`).join('');}
-
-function rDK(){const tot=DL.length,n=new Date(),mes=DL.filter(d=>{const m=new Date(d.data);return m.getMonth()===n.getMonth()&&m.getFullYear()===n.getFullYear();}).length,par=DL.reduce((a,d)=>a+(parseInt(d.participantes)||0),0),h=[{c:'teal',pt:'Total de DSS',zh:'安全对话总数',en:'Total DSS',v:tot,s:'desde o início'},{c:'blue',pt:'DSS este mês',zh:'本月对话',en:'This month',v:mes,s:'mês atual'},{c:'green',pt:'Total participantes',zh:'总参与人数',en:'Total participants',v:par,s:'acumulado'}].map(k=>`<div class="kpi ${k.c}"><div><span class="tri"><span class="pt">${k.pt}</span><span class="zh">${k.zh}</span></span></div><div class="kv">${k.v}</div><div class="ks">${k.s}</div></div>`).join('');['kd','kdr'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=h;});}
-
-function rDSS(){rDK();if(!DL.length){document.getElementById('dl').innerHTML='<p style="text-align:center;color:var(--text2);padding:2rem"><span class="tri"><span class="pt">Nenhum DSS registrado ainda</span><span class="zh">暂无安全对话记录</span></span></p>';return;}document.getElementById('dl').innerHTML=DL.map(d=>`<div class="dc"><div class="dh"><div><div style="font-size:10px;color:var(--text3)">${d.data} · ${d.setor||'—'}</div><div style="font-size:13px;font-weight:500;margin:4px 0">${d.tema||'—'}</div><div style="font-size:11px;color:var(--text2)"><span class="ti"><span class="pt">Responsável:</span><span class="zh">负责人:</span></span> <strong style="color:var(--text1)">${d.responsavel||'—'}</strong> · <span class="ti"><span class="pt">Participantes:</span><span class="zh">参与:</span></span> <strong style="color:#5eead4">${d.participantes||0}</strong></div></div>${isAdmin?`<button class="btn bd bsm" onclick="delDSS('${d.id}')"><span class="tb"><span class="pt">Excluir</span><span class="zh">删除</span></span></button>`:''}</div>${d.assuntos?`<div style="font-size:12px;color:var(--text2);line-height:1.6">${d.assuntos.replace(/\n/g,'<br>')}</div>`:''} ${d.obs?`<div style="font-size:11px;color:var(--text3);margin-top:6px;font-style:italic">${d.obs}</div>`:''}<div class="dt">${(d.assuntos||'').split('\n').filter(Boolean).slice(0,3).map(t=>`<span class="badge bt">${t.slice(0,30)}</span>`).join('')}</div></div>`).join('');}
-
-function rFN(){const eq=[...new Set((G.ncsUnicas||[]).map(n=>n.equipamento))];const bar=document.getElementById('nfb');bar.innerHTML='';[{pt:'Todos',zh:'全部',en:'All',v:'todos'},{pt:'Urgentes',zh:'紧急',en:'Urgent',v:'urgente'},{pt:'Críticos',zh:'关键',en:'Critical',v:'critico'},{pt:'Não iniciados',zh:'未开始',en:'',v:'nao-iniciada'},{pt:'Em andamento',zh:'进行中',en:'',v:'em-andamento'},{pt:'Resolvidos',zh:'已解决',en:'',v:'resolvida'},{pt:'Unificadas',zh:'已合并',en:'',v:'todas-incluindo-unificadas'},
-    {pt:'Com comentário',zh:'有备注',en:'',v:'com-comentario'},
-    ...eq.map(e=>({pt:e,zh:e,en:e,v:e}))].forEach((b,i)=>{const btn=document.createElement('button');btn.className='fbtn'+(i===0?' active':'');btn.innerHTML=`<span class="tb"><span class="pt">${b.pt}</span><span class="zh">${b.zh}</span></span>`;btn.onclick=()=>{document.querySelectorAll('#nfb .fbtn').forEach(x=>x.classList.remove('active'));btn.classList.add('active');rNCs(G.ncsUnicas,b.v);};bar.appendChild(btn);});}
-
-function ehUnificada(nc){
-  const chave=nk(nc);
-  const trat=T[chave]||{};
-  return !!(trat.acao&&trat.acao.startsWith('[UNIFICADA]'));
-}
-
-function rNCs(ncs,f){const l=ncs.filter(n=>{if(ehUnificada(n)&&f!=='todas-incluindo-unificadas')return false;if(f==='todos')return true;if(f==='urgente')return n.urgencia==='urgente';if(f==='critico')return n.critico;if(f==='nao-iniciada')return st(n)==='nao-iniciada';if(f==='em-andamento')return st(n)==='em-andamento';if(f==='resolvida')return st(n)==='resolvida';return n.equipamento===f;});if(!l.length){document.getElementById('nl').innerHTML='<p style="text-align:center;color:var(--text2);padding:2rem"><span class="tri"><span class="pt">Nenhuma NC neste filtro</span><span class="zh">无结果</span></span></p>';return;}
-document.getElementById('nl').innerHTML=l.map(nc=>{const k=nk(nc),tr=T[k]||{},s2=tr.status||'nao-iniciada',cls=s2==='resolvida'?'resolvida':nc.urgencia,pc=nc.urgencia==='urgente'?'background:var(--red-dim);color:#fca5a5':nc.urgencia==='atencao'?'background:var(--amber-dim);color:#fcd34d':'background:var(--green-dim);color:#86efac',sc=s2==='nao-iniciada'?'sni':s2==='em-andamento'?'sea':'srv',sl2=s2==='nao-iniciada'?'<span class="ti"><span class="pt">Não iniciada</span><span class="zh">未开始</span></span>':s2==='em-andamento'?'<span class="ti"><span class="pt">Em andamento</span><span class="zh">进行中</span></span>':'<span class="ti"><span class="pt">Resolvida</span><span class="zh">已解决</span></span>',resp=nc.responsaveis.slice(0,2).join(', ')+(nc.responsaveis.length>2?` +${nc.responsaveis.length-2}`:''),pv=tr.prazo&&new Date(tr.prazo)<new Date()&&s2!=='resolvida',nj=JSON.stringify(JSON.stringify(nc));return`<div class="nc ${cls}"><div class="ncg"><div><span class="badge" style="${pc}">${nc.item}</span><div style="font-size:10px;color:var(--text2);margin-top:5px">${nc.equipamento}</div>${nc.critico?'<div style="font-size:10px;color:#fca5a5;margin-top:3px">▲ <span class="ti"><span class="pt">Crítico</span><span class="zh">关键</span></span></div>':''}</div><div><div style="font-size:13px;font-weight:500;margin-bottom:4px">${nc.itemCurto}</div><div style="font-size:11px;color:var(--text2);line-height:1.7"><span class="ti"><span class="pt">Setor:</span><span class="zh">部门:</span></span> <strong style="color:var(--text1)">${nc.setor||'—'}</strong> · <span class="ti"><span class="pt">Por:</span><span class="zh">记录:</span></span> ${resp}<br>${nc.ocorrencias}x · ${nc.primeiraNota}${nc.comentarios.length?'<br><em style="color:var(--text3)">"'+nc.comentarios[0].slice(0,80)+'"</em>':''}</div>${tr.responsavel?`<div style="font-size:11px;color:var(--text2);margin-top:6px"><span class="ti"><span class="pt">Responsável:</span><span class="zh">负责人:</span></span> <strong style="color:var(--text1)">${tr.responsavel}</strong>${tr.prazo?` · <span class="ti"><span class="pt">Prazo:</span><span class="zh">期限:</span></span> <strong style="color:${pv?'#fca5a5':'#fcd34d'}">${tr.prazo}${pv?' ⚠':''}</strong>`:''}</div>`:''}${tr.acao?`<div style="font-size:11px;color:var(--text2);margin-top:3px"><span class="ti"><span class="pt">Ação:</span><span class="zh">措施:</span></span> ${tr.acao.slice(0,90)}</div>`:''}<div style="margin-top:8px"><span class="badge ${sc}">${sl2}</span></div></div><div style="text-align:right"><div class="ncd">${nc.diasEmAberto}</div><div style="font-size:10px;color:var(--text2);margin-top:2px"><span class="ti"><span class="pt">dias</span><span class="zh">天</span></span></div><button class="btn bp bsm" style="margin-top:10px;display:block;width:100%" onclick='om(${nj})'><span class="tb"><span class="pt">${s2==='nao-iniciada'?'Iniciar':'Atualizar'}</span><span class="zh">${s2==='nao-iniciada'?'开始':'更新'}</span></span></button>${isAdmin?`<button class="btn bd bsm" style="margin-top:6px;display:block;width:100%" onclick="delTr('${k}')"><span class="tb"><span class="pt">Excluir</span><span class="zh">删除</span></span></button>`:''}</div></div></div>`;}).join('');}
-
-function rTr(f){const ncs=(G.ncsUnicas||[]).filter(n=>f==='todos'||st(n)===f),sl=s=>s==='nao-iniciada'?'Não iniciada':s==='em-andamento'?'Em andamento':'Resolvida',sc=s=>s==='nao-iniciada'?'#fca5a5':s==='em-andamento'?'#fcd34d':'#86efac';document.getElementById('tb').innerHTML=ncs.map(nc=>{const tr=T[nk(nc)]||{},s2=tr.status||'nao-iniciada',pv=tr.prazo&&new Date(tr.prazo)<new Date()&&s2!=='resolvida';return`<tr><td title="${nc.equipamento}">${nc.equipamento.slice(0,18)}</td><td title="${nc.itemCurto}">${nc.itemCurto.slice(0,35)}</td><td><span style="font-size:10px;color:${sc(s2)}">${sl(s2)}</span></td><td style="color:${pv?'#fca5a5':tr.prazo?'#fcd34d':'var(--text3)'}">${tr.prazo||'—'}${pv?' ⚠':''}</td><td title="${tr.responsavel||''}">${(tr.responsavel||'—').slice(0,18)}</td><td style="color:var(--text2)" title="${tr.acao||''}">${tr.acao?tr.acao.slice(0,30)+'…':'—'}</td><td><button class="btn bgh bsm" onclick='om(${JSON.stringify(JSON.stringify(nc))})'>✎</button></td></tr>`;}).join('');}
-
-function ft(f,btn){document.querySelectorAll('#tt .fbtn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');rTr(f);}
-
-function rSem(){const h=new Date(),i=new Date(h);i.setDate(h.getDate()-h.getDay()+1+SO*7);i.setHours(0,0,0,0);const fim=new Date(i);fim.setDate(i.getDate()+6);fim.setHours(23,59,59,999);document.getElementById('sl').textContent=SO===0?'Esta semana · 本周':SO===-1?'Semana passada · 上周':i.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'})+' – '+fim.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'});const ncs=G.ncsUnicas||[],sem=ncs.filter(n=>{const d=new Date(n.primeiraNota);return d>=i&&d<=fim;}),rv=sem.filter(n=>st(n)==='resolvida').length,urg=sem.filter(n=>n.urgencia==='urgente').length,ds=DL.filter(d=>{const dt=new Date(d.data);return dt>=i&&dt<=fim;}).length;document.getElementById('ks').innerHTML=[{c:'blue',pt:'Inspeções',zh:'检查次数',en:'Inspections',v:G.totalInspecoes},{c:'red',pt:'NCs semana',zh:'本周不合格',en:'Week NCs',v:sem.length,s:urg+' urgentes'},{c:'green',pt:'Resolvidas',zh:'已解决',en:'',v:rv},{c:'teal',pt:'DSS semana',zh:'本周安全对话',en:'Week DSS',v:ds}].map(k=>`<div class="kpi ${k.c}"><div><span class="tri"><span class="pt">${k.pt}</span><span class="zh">${k.zh}</span></span></div><div class="kv">${k.v}</div>${k.s?`<div class="ks">${k.s}</div>`:''}</div>`).join('');const pe={};sem.forEach(n=>{pe[n.equipamento]=(pe[n.equipamento]||0)+1;});const labs=Object.keys(pe),vals=labs.map(l=>pe[l]);if(chsem)chsem.destroy();if(labs.length)chsem=new Chart(document.getElementById('chsem'),{type:'bar',data:{labels:labs,datasets:[{label:'NCs',data:vals,backgroundColor:'#3b82f6',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#8fa3b8',font:{size:11}},grid:{display:false}},y:{ticks:{color:'#8fa3b8',font:{size:10}},grid:{color:'rgba(255,255,255,.05)'}}}}});const sl2=s=>s==='nao-iniciada'?'Não iniciada':s==='em-andamento'?'Em andamento':'Resolvida',sc=s=>s==='nao-iniciada'?'#fca5a5':s==='em-andamento'?'#fcd34d':'#86efac';document.getElementById('sb').innerHTML=sem.length?sem.map(nc=>{const tr=T[nk(nc)]||{},s2=tr.status||'nao-iniciada';return`<tr><td>${nc.primeiraNota}</td><td title="${nc.equipamento}">${nc.equipamento.slice(0,16)}</td><td title="${nc.itemCurto}">${nc.itemCurto.slice(0,35)}</td><td>${nc.responsaveis[0]||'—'}</td><td><span style="font-size:11px;color:${sc(s2)}">${sl2(s2)}</span></td><td style="color:var(--text2)">${tr.acao?tr.acao.slice(0,28)+'…':'—'}</td></tr>`;}).join(''):'<tr><td colspan="6" style="text-align:center;color:var(--text2);padding:1.5rem"><span class="tri"><span class="pt">Nenhuma NC esta semana</span><span class="zh">本周无不合格项</span></span></td></tr>';}
-
-function ns(d){SO+=d;rSem();}
-
-function om(nj){NCA=JSON.parse(nj);window._simIgnorar=false;document.getElementById('sim-box').classList.remove('visible');const tr=T[nk(NCA)]||{};document.getElementById('mtit').innerHTML=`<span class="ti"><span class="pt">Tratativa</span><span class="zh">整改措施</span></span><span style="font-size:11px;color:var(--text2);display:block;margin-top:3px">${NCA.itemCurto.slice(0,55)}</span>`;document.getElementById('mst').value=tr.status||'nao-iniciada';document.getElementById('mre').value=tr.responsavel||'';document.getElementById('mpr').value=tr.prazo||'';document.getElementById('mac').value=tr.acao||'';document.getElementById('ip').style.display='none';document.getElementById('mfo').value='';document.getElementById('mnc').style.display='flex';}
-
-async function saveTrat(){if(!NCA)return;const btn=document.getElementById('bsnc');btn.disabled=true;const k=nk(NCA),tr={status:document.getElementById('mst').value,responsavel:document.getElementById('mre').value.trim(),prazo:document.getElementById('mpr').value,acao:document.getElementById('mac').value.trim(),updatedAt:new Date().toISOString(),equipamento:NCA.equipamento,itemCurto:NCA.itemCurto,setor:NCA.setor||''};try{if(db){await db.ref('tratativas/'+k).set(tr);toast('Salvo e sincronizado · 已保存并同步','ok');}else{T[k]=tr;rTudo();toast('Salvo localmente','ok');}}catch(e){T[k]=tr;rTudo();toast('Erro de sync — salvo localmente','err');}fm('mnc');btn.disabled=false;}
-
-async function delTr(k){if(!isAdmin){toast('Sem permissão · 无权限','err');return;}if(!confirm('Excluir esta tratativa?'))return;try{if(db)await db.ref('tratativas/'+k).remove();delete T[k];rTudo();toast('Excluído · 已删除','ok');}catch(e){toast('Erro ao excluir','err');}}
-
-function abrirDSS(){document.getElementById('dd').value=new Date().toISOString().split('T')[0];['dt','dse','dr','da','do'].forEach(id=>document.getElementById(id).value='');document.getElementById('dp').value='';document.getElementById('mdss').style.display='flex';}
-
-async function saveDSS(){const btn=document.getElementById('bsdss'),tema=document.getElementById('dt').value.trim();if(!tema){toast('Informe o tema · 请填写主题','err');return;}btn.disabled=true;const dss={data:document.getElementById('dd').value,tema,setor:document.getElementById('dse').value.trim(),responsavel:document.getElementById('dr').value.trim(),participantes:parseInt(document.getElementById('dp').value)||0,assuntos:document.getElementById('da').value.trim(),obs:document.getElementById('do').value.trim(),criadoEm:new Date().toISOString()};try{if(db){await db.ref('dss').push(dss);toast('DSS registrado · 已记录','ok');}else{DL.unshift({id:Date.now().toString(),...dss});rDSS();toast('Salvo localmente','ok');}}catch(e){toast('Erro ao salvar DSS','err');}fm('mdss');btn.disabled=false;}
-
-async function delDSS(id){if(!isAdmin){toast('Sem permissão · 无权限','err');return;}if(!confirm('Excluir este DSS?'))return;try{if(db)await db.ref('dss/'+id).remove();DL=DL.filter(d=>d.id!==id);rDSS();toast('DSS excluído · 已删除','ok');}catch(e){toast('Erro ao excluir','err');}}
-
-function fm(id){document.getElementById(id).style.display='none';NCA=null;}
-function pf(inp){if(inp.files&&inp.files[0]){const r=new FileReader();r.onload=e=>{const i=document.getElementById('ip');i.src=e.target.result;i.style.display='block';};r.readAsDataURL(inp.files[0]);}}
-function toast(msg,type='ok'){const el=document.createElement('div');el.className='toast '+type;el.textContent=msg;document.body.appendChild(el);setTimeout(()=>el.remove(),3500);}
-
-function demo(){return{totalInspecoes:236,totalNcsUnicas:7,equipamentos:[{nome:'Solda MIG / Içamento',inspecoes:122,ncsUnicas:4},{nome:'Empilhadeira',inspecoes:75,ncsUnicas:2},{nome:'Granalha',inspecoes:23,ncsUnicas:1}],ncsUnicas:[{item:'Item 21',itemCurto:'Equipamento de içamento com problemas',equipamento:'Solda MIG / Içamento',setor:'Fabricação de Caixa',urgencia:'urgente',critico:true,diasEmAberto:22,ocorrencias:14,primeiraNota:'2026-02-24',responsaveis:['Jardel','Marcos'],comentarios:['ponte estragada']},{item:'Item 19',itemCurto:'Extintor ausente ou fora da validade',equipamento:'Solda MIG / Içamento',setor:'Fabricação de Caixa',urgencia:'urgente',critico:true,diasEmAberto:17,ocorrencias:7,primeiraNota:'2026-03-01',responsaveis:['Ricardo'],comentarios:['foi usado']},{item:'Item 5',itemCurto:'Freios sem funcionamento adequado',equipamento:'Empilhadeira',setor:'Logística',urgencia:'atencao',critico:true,diasEmAberto:9,ocorrencias:2,primeiraNota:'2026-03-09',responsaveis:['João'],comentarios:[]},{item:'Item 4',itemCurto:'Parada de emergência com falha',equipamento:'Granalha',setor:'Acabamento',urgencia:'atencao',critico:true,diasEmAberto:8,ocorrencias:3,primeiraNota:'2026-03-10',responsaveis:['Pedro'],comentarios:[]},{item:'Item 20',itemCurto:'EPI incompleto para soldagem',equipamento:'Solda MIG / Içamento',setor:'Fabricação de Caixa',urgencia:'recente',critico:true,diasEmAberto:3,ocorrencias:1,primeiraNota:'2026-03-15',responsaveis:['Jardel'],comentarios:['lente frontal']},{item:'Item 7',itemCurto:'Bateria com danos visuais',equipamento:'Empilhadeira',setor:'Logística',urgencia:'atencao',critico:true,diasEmAberto:7,ocorrencias:1,primeiraNota:'2026-03-11',responsaveis:['João'],comentarios:['inchaço']},{item:'Item 9',itemCurto:'Extintor com validade vencida',equipamento:'Granalha',setor:'Acabamento',urgencia:'atencao',critico:true,diasEmAberto:10,ocorrencias:4,primeiraNota:'2026-03-08',responsaveis:['Ana'],comentarios:['vencida']}]};}
-
-
-// ══ ANÁLISE DE SIMILARIDADE DE NCS ═══════════════════════════
-
-// Tokeniza texto: minúsculo, remove pontuação, split por espaço
-function tokenizar(txt) {
-  return txt.toLowerCase()
-    .replace(/[^a-záàãâéêíóôõúüçñ0-9\s]/gi, ' ')
-    .split(/\s+/)
-    .filter(t => t.length > 2)
-    .filter(t => !['que','com','sem','dos','das','nas','nos','uma','uns','umas','para','pelo','pela','este','esta','essa','esse','num','numa','mais','quando','onde','como','qual','quais','está','estão','tem','não'].includes(t));
-}
-
-// Similaridade Jaccard entre dois conjuntos de tokens
-function jaccard(tokA, tokB) {
-  const setA = new Set(tokA), setB = new Set(tokB);
-  const inter = [...setA].filter(t => setB.has(t)).length;
-  const uniao = new Set([...setA, ...setB]).size;
-  return uniao === 0 ? 0 : inter / uniao;
-}
-
-// Similaridade Cosine simples (frequência de tokens)
-function cosine(tokA, tokB) {
-  const freq = (toks) => toks.reduce((m, t) => { m[t] = (m[t]||0)+1; return m; }, {});
-  const fA = freq(tokA), fB = freq(tokB);
-  const todos = new Set([...Object.keys(fA), ...Object.keys(fB)]);
-  let dot=0, normA=0, normB=0;
-  todos.forEach(t => {
-    const a=fA[t]||0, b=fB[t]||0;
-    dot += a*b; normA += a*a; normB += b*b;
+  db.ref('dss').on('value', s => {
+    const r = s.val() || {};
+    DL = Object.entries(r).map(([id,v]) => ({id,...v})).sort((a,b) => b.data.localeCompare(a.data));
+    rDSSKpis();
+    if (document.getElementById('td').classList.contains('active')) rDSS();
   });
-  return (normA && normB) ? dot / (Math.sqrt(normA) * Math.sqrt(normB)) : 0;
+  buscar(); setInterval(buscar, 5 * 60 * 1000);
 }
 
-// Score combinado (média Jaccard + Cosine)
-function scoreSim(txtA, txtB) {
-  const tA = tokenizar(txtA), tB = tokenizar(txtB);
-  if (!tA.length || !tB.length) return 0;
-  return (jaccard(tA, tB) + cosine(tA, tB)) / 2;
-}
-
-// Limite fallback local
-const LIMITE_SIM = 0.35;
-
-// ── ANÁLISE SEMÂNTICA COM GEMINI (GRATUITO) ──────────────────
-const GEMINI_KEY = "AIzaSyAhDlXmNUqY8AFZ9x9e8jZ_yzIZU-7bQ7o";
-const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + GEMINI_KEY;
-
-async function analisarComIA(descricaoNova, equipamentoAtual, setorAtual) {
-  const ncs = G.ncsUnicas || [];
-  if (!ncs.length) return [];
-
-  const listaExistentes = ncs.map((nc, i) => {
-    const texto = textoNC ? textoNC(nc) : (nc.comentarios||[]).join(' ') || nc.itemCurto;
-    return `[${i}] Equipamento: ${nc.equipamento} | Setor: ${nc.setor||'N/A'} | Colaborador escreveu: "${texto}"`;
-  }).join('\n');
-
-  // Monta lista com comentários reais dos colaboradores
-  const listaComComentarios = ncs.map((nc, i) => {
-    const texto = textoNC(nc);
-    return `[${i}] Equip: ${nc.equipamento} | Setor: ${nc.setor||'N/A'} | Colaborador escreveu: "${texto}"`;
-  }).join('\n');
-
-  const prompt = `Sistema de detecção de duplicatas para inspeções de segurança industrial no Brasil.
-
-O usuário está registrando uma tratativa. Verifique se já existe NC registrada com o mesmo problema.
-
-NOVA DESCRIÇÃO:
-Equipamento: "${equipamentoAtual || 'não informado'}"
-Setor: "${setorAtual || 'não informado'}"
-Texto digitado: "${descricaoNova}"
-
-NCS EXISTENTES (relato original do colaborador):
-${listaComComentarios}
-
-Seja GENEROSO na detecção. Considere mesmo problema quando descreve a mesma falha física, mesmo com erros ou palavras diferentes.
-
-Responda APENAS JSON sem markdown:
-{"similares":[{"indice":0,"score":0.85,"motivo":"mesmo defeito descrito de forma diferente"}]}
-
-Score >= 0.50 para incluir. Se nenhum: {"similares":[]}`;
-
+async function buscar() {
   try {
-    const resp = await fetch(GEMINI_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.1, maxOutputTokens: 400 }
-      })
-    });
-
-    if (!resp.ok) throw new Error('Gemini HTTP ' + resp.status);
-    const data = await resp.json();
-    const txt = data.candidates?.[0]?.content?.parts?.[0]?.text || '{"similares":[]}';
-    const clean = txt.replace(/```json|```/g, '').trim();
-    const json = JSON.parse(clean);
-
-    return (json.similares || []).map(s => ({
-      nc: ncs[s.indice],
-      score: s.score,
-      pct: Math.round(s.score * 100),
-      motivo: s.motivo
-    })).filter(s => s.nc);
-
+    const r = await fetch(API_URL + '?_=' + Date.now());
+    if (!r.ok) throw new Error();
+    const d = await r.json();
+    if (d.erro) throw new Error();
+    G.ncsUnicas      = d.ncsUnicas      || [];
+    G.equipamentos   = d.equipamentos   || [];
+    G.totalInspecoes = d.totalInspecoes || 0;
+    G.inspecoesHoje  = d.inspecoesHoje  || [];
+    G.inspecoesSemana= d.inspecoesSemana|| [];
+    rTudo(); setSS('ok');
+    if (document.getElementById('tcl').classList.contains('active')) rCL(_clFiltro);
+    if (document.getElementById('tnc').classList.contains('active')) rNC(_ncTab);
   } catch(e) {
-    console.warn('Gemini indisponível — usando análise local:', e.message);
-    return analisarLocal(descricaoNova);
+    setSS(G.ncsUnicas.length ? 'ok' : 'demo');
+    if (!G.ncsUnicas.length) { G = demo(); rTudo(); }
   }
 }
 
-// Fallback local (sem IA)
-function analisarLocal(descricaoNova) {
-  if (!descricaoNova || descricaoNova.length < 8) return [];
-  const ncs = G.ncsUnicas || [];
-  return ncs
-    .map(nc => ({ nc, score: scoreSim(descricaoNova, nc.itemCurto), pct: 0, motivo: '' }))
-    .filter(s => s.score >= LIMITE_SIM)
-    .map(s => ({ ...s, pct: Math.round(s.score * 100) }))
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 3);
+// ── Render principal ─────────────────────────────────────────
+function rTudo() {
+  const ncs  = G.ncsUnicas || [];
+  const ab   = ncs.filter(n => st(n) !== 'resolvida');
+  const nova = ncs.filter(n => st(n) === 'nao-iniciada');
+  const pend = ncs.filter(n => st(n) === 'em-andamento');
+  const resv = ncs.filter(n => st(n) === 'resolvida');
+
+  // Badge nav NC
+  const cntEl = document.getElementById('cnt-nc');
+  cntEl.textContent = ab.length;
+  cntEl.style.display = ab.length ? '' : 'none';
+
+  // Contadores sub-tabs NC
+  document.getElementById('cnt-nova').textContent = nova.length;
+  document.getElementById('cnt-pend').textContent = pend.length;
+  document.getElementById('cnt-resv').textContent = resv.length;
+
+  // KPIs Dashboard
+  document.getElementById('kpis-dash').innerHTML = [
+    {c:'blue',  l:'Inspeções',     v:G.totalInspecoes, s:(G.equipamentos||[]).length+' equipamentos'},
+    {c:'red',   l:'NCs Abertas',   v:ab.length,        s:nova.length+' sem tratativa'},
+    {c:'amber', l:'Em Andamento',  v:pend.length,      s:'aguardando resolução'},
+    {c:'green', l:'Resolvidas',    v:resv.length,      s:'período total'},
+  ].map(k => `<div class="kpi ${k.c}">
+    <div class="kpi-lbl">${k.l}</div>
+    <div class="kpi-val">${k.v}</div>
+    <div class="kpi-sub">${k.s}</div>
+  </div>`).join('');
+
+  rChart(ncs);
+  rEq();
+  rDashHoje();
+  rDSSKpis();
+
+  // Atualiza abas abertas
+  if (document.getElementById('tnc').classList.contains('active')) rNC(_ncTab);
+  if (document.getElementById('tcl').classList.contains('active')) rCL(_clFiltro);
 }
 
-// Exibe painel de similaridade no modal
-function exibirSimilares(similares) {
-  const box = document.getElementById('sim-box');
-  const lista = document.getElementById('sim-lista');
-  if (!similares.length) { box.classList.remove('visible'); return; }
+// ── Chart donut ──────────────────────────────────────────────
+function rChart(ncs) {
+  const ni = ncs.filter(n => st(n) === 'nao-iniciada').length;
+  const ea = ncs.filter(n => st(n) === 'em-andamento').length;
+  const rv = ncs.filter(n => st(n) === 'resolvida').length;
+  if (_chStatus) _chStatus.destroy();
+  const el = document.getElementById('ch-status');
+  if (!el) return;
+  _chStatus = new Chart(el, {
+    type: 'doughnut',
+    data: { labels:['Não iniciada','Em andamento','Resolvida'], datasets:[{data:[ni,ea,rv],backgroundColor:['#ef4444','#f59e0b','#22c55e'],borderWidth:0}] },
+    options: { responsive:true, maintainAspectRatio:false, cutout:'65%', plugins:{ legend:{ display:false } } }
+  });
+  document.getElementById('ch-leg').innerHTML = [
+    {c:'#ef4444', l:'Não iniciada', n:ni},
+    {c:'#f59e0b', l:'Em andamento', n:ea},
+    {c:'#22c55e', l:'Resolvida',    n:rv},
+  ].map(x => `<span style="display:flex;align-items:center;gap:5px">
+    <span style="width:9px;height:9px;border-radius:50%;background:${x.c};flex-shrink:0"></span>
+    ${x.l} <strong>(${x.n})</strong>
+  </span>`).join('');
+}
 
-  lista.innerHTML = similares.map((s, i) => {
-    const cls = s.pct >= 75 ? 'alta' : 'media';
-    const motivoHTML = s.motivo
-      ? `<div style="font-size:10px;color:#f59e0b;margin-bottom:6px;font-style:italic">🤖 IA: ${s.motivo}</div>`
-      : '';
-    return `<div class="sim-item">
-      <span class="sim-pct ${cls}">${s.pct}% semelhante · ${s.pct}% 相似</span>
-      <div class="sim-desc">${s.nc.itemCurto}</div>
-      ${motivoHTML}
-      <div class="sim-meta">${s.nc.equipamento} · ${s.nc.setor||'—'} · ${s.nc.ocorrencias}x registrada · desde ${s.nc.primeiraNota}</div>
-      <div class="sim-acoes">
-        <button class="sim-btn sim-unif" onclick="simUnificar(${i})">
-          <span class="pt">Unificar com esta</span> · <span class="zh">与此合并</span>
-        </button>
-        <button class="sim-btn sim-nova" onclick="simContinuar()">
-          <span class="pt">Cadastrar como nova</span> · <span class="zh">注册为新项</span>
-        </button>
+// ── Barras por equipamento ────────────────────────────────────
+function rEq() {
+  const eq = (G.equipamentos || []).filter(e => e.ncsUnicas > 0).sort((a,b) => b.ncsUnicas - a.ncsUnicas).slice(0,8);
+  if (!eq.length) { document.getElementById('eq-lista').innerHTML = '<p style="font-size:.8rem;color:var(--tl)">Nenhuma NC por equipamento</p>'; return; }
+  const mx = Math.max(...eq.map(e => e.ncsUnicas), 1);
+  document.getElementById('eq-lista').innerHTML = eq.map(e => {
+    const p = Math.round(e.ncsUnicas / mx * 100);
+    const c = e.ncsUnicas <= 2 ? 'var(--amber)' : 'var(--red)';
+    const nome = e.nome.replace('Inspeção Setorial — ','').replace('Inspeção — ','');
+    return `<div style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;font-size:.8rem;margin-bottom:3px">
+        <span>${nome}</span><span style="font-weight:700;color:${c}">${e.ncsUnicas}</span>
+      </div>
+      <div style="height:5px;background:var(--bg);border-radius:3px;overflow:hidden">
+        <div style="width:${p}%;background:${c};height:100%"></div>
       </div>
     </div>`;
   }).join('');
-
-  box.classList.add('visible');
-  window._similares = similares;
 }
 
-// Usuário escolhe UNIFICAR — incrementa ocorrência da NC existente
-async function simUnificar(idx) {
-  const sim = window._similares[idx];
-  if (!sim) return;
-  const nc = sim.nc;
-  // Fecha o painel e avisa
-  document.getElementById('sim-box').classList.remove('visible');
-  toast('Unificada com: ' + nc.itemCurto.slice(0,40) + ' · 已与现有项合并', 'ok');
-  // Fecha modal sem cadastrar nova
-  fm('mnc');
-}
-
-// Usuário escolhe CONTINUAR — esconde painel e permite salvar
-function simContinuar() {
-  document.getElementById('sim-box').classList.remove('visible');
-  window._simIgnorar = true;
-  toast('Prosseguindo com novo cadastro · 继续新建', 'ok');
-}
-
-
-// Verifica similaridade enquanto usuário digita — usa IA semântica
-let _simTimer = null;
-async function verificarSim(txt) {
-  clearTimeout(_simTimer);
-  const box = document.getElementById('sim-box');
-  if (!txt || txt.length < 10) { box.classList.remove('visible'); return; }
-
-  _simTimer = setTimeout(async () => {
-    if (window._simIgnorar) return;
-
-    // Mostra indicador de análise
-    box.classList.add('visible');
-    document.getElementById('sim-lista').innerHTML =
-      '<div style="font-size:11px;color:#8fa3b8;padding:8px 0">🔍 <span class="pt">Analisando com IA</span> · <span class="zh">AI分析中...</span></div>';
-
-    // Pega contexto atual do modal (equipamento e setor da NC sendo editada)
-    const equip = NCA ? NCA.equipamento : '';
-    const setor = NCA ? NCA.setor : '';
-
-    const similares = await analisarComIA(txt, equip, setor);
-    exibirSimilares(similares);
-  }, 800);
-}
-
-// ══ VARREDURA COMPLETA DE DUPLICATAS POR IA ══════════════════
-
-let _varreduraRodando = false;
-let _gruposDup = [];
-
-async function executarVarredura() {
-  if (_varreduraRodando) return;
-  const ncs = G.ncsUnicas || [];
-  if (!ncs.length) { toast('Nenhuma NC disponível para analisar · 没有可分析的不合格项', 'err'); return; }
-
-  _varreduraRodando = true;
-  _gruposDup = [];
-
-  document.getElementById('dup-inicial').style.display = 'none';
-  document.getElementById('dup-resultado').innerHTML = '';
-  document.getElementById('dup-resumo').style.display = 'none';
-  document.getElementById('dup-status').style.display = 'block';
-  document.getElementById('btn-varrer').disabled = true;
-
-  const tratativas = T || {};
-
-  // TODAS as NCs — abertas, em andamento E resolvidas da lista principal
-  const todasNCs = ncs.map(nc => ({
-    ...nc,
-    _encerrada: (tratativas[nk(nc)] || {}).status === 'resolvida',
-    // Injeta comentário da tratativa se o colaborador não escreveu nada
-    comentarios: nc.comentarios && nc.comentarios.length
-      ? nc.comentarios
-      : (tratativas[nk(nc)] && tratativas[nk(nc)].acao ? [tratativas[nk(nc)].acao] : [])
-  }));
-
-  // Adiciona NCs que existem APENAS no Firebase (já tratadas, sem NC ativa correspondente)
-  Object.values(tratativas).forEach(trat => {
-    if (!trat.itemCurto || !trat.equipamento) return;
-    const jaExiste = todasNCs.some(n =>
-      n.itemCurto === trat.itemCurto && n.equipamento === trat.equipamento
-    );
-    if (!jaExiste) {
-      todasNCs.push({
-        itemCurto:    trat.itemCurto,
-        equipamento:  trat.equipamento,
-        setor:        trat.setor || '—',
-        item:         trat.item  || '—',
-        diasEmAberto: 0,
-        ocorrencias:  1,
-        primeiraNota: trat.updatedAt ? trat.updatedAt.split('T')[0] : '—',
-        responsaveis: [trat.responsavel || '—'],
-        comentarios:  trat.acao ? [trat.acao] : [],
-        critico:      false,
-        _encerrada:   trat.status === 'resolvida'
-      });
-    }
-  });
-
-  const total = todasNCs.length;
-  const jaAgrupadas = new Set();
-  const grupos = [];
-  let analisadas = 0;
-
-  // ── PASSO 1: Detecção direta por comentário idêntico (rápido, sem IA) ──
-  setDupProgress(0, total, '🔍 Verificando comentários idênticos...');
-
-  for (let i = 0; i < todasNCs.length; i++) {
-    if (jaAgrupadas.has(i)) continue;
-    const ncBase = todasNCs[i];
-    const textoBase = normalizar(textoNC(ncBase));
-    if (textoBase.length < 4) continue;
-    const toksBase = new Set(textoBase.split(' ').filter(t => t.length > 2));
-
-    const identicos = [];
-    for (let j = i + 1; j < todasNCs.length; j++) {
-      if (jaAgrupadas.has(j)) continue;
-      const ncComp = todasNCs[j];
-      const textoComp = normalizar(textoNC(ncComp));
-      if (textoComp.length < 4) continue;
-      const toksComp = new Set(textoComp.split(' ').filter(t => t.length > 2));
-      const inter = [...toksBase].filter(t => toksComp.has(t)).length;
-      const uniao = new Set([...toksBase, ...toksComp]).size;
-      const sim = uniao > 0 ? inter / uniao : 0;
-      if (sim >= 0.55) {
-        identicos.push({ nc: ncComp, score: sim, pct: Math.round(sim*100), motivo: `comentários ${Math.round(sim*100)}% idênticos` });
-        jaAgrupadas.add(j);
-      }
-    }
-    if (identicos.length > 0) {
-      jaAgrupadas.add(i);
-      grupos.push({ principal: ncBase, similares: identicos, metodo: 'direto',
-        status: ncBase._encerrada ? 'resolvida' : 'aberta' });
-    }
-  }
-
-  setDupProgress(grupos.length, total, `✅ ${grupos.length} grupos diretos. Iniciando análise semântica IA...`);
-  await new Promise(r => setTimeout(r, 200));
-
-  // ── PASSO 2: Análise semântica com Gemini para os demais ──
-  for (let i = 0; i < todasNCs.length; i++) {
-    if (jaAgrupadas.has(i)) { analisadas++; continue; }
-    const ncBase = todasNCs[i];
-    const restantes = [];
-    for (let j = i+1; j < todasNCs.length; j++) {
-      if (!jaAgrupadas.has(j)) restantes.push(todasNCs[j]);
-    }
-
-    setDupProgress(analisadas, total, `🤖 IA: "${textoNC(ncBase).slice(0,45)}..."`);
-
-    if (restantes.length > 0 && textoNC(ncBase).length > 3) {
-      try {
-        const similares = await geminiCompararGrupo(ncBase, restantes, todasNCs);
-        if (similares.length > 0) {
-          jaAgrupadas.add(i);
-          similares.forEach(s => { const idx = todasNCs.indexOf(s.nc); if(idx>-1) jaAgrupadas.add(idx); });
-          grupos.push({ principal: ncBase, similares, metodo: 'ia',
-            status: ncBase._encerrada ? 'resolvida' : 'aberta' });
-        }
-      } catch(e) { console.warn('Erro IA:', e.message); }
-      await new Promise(r => setTimeout(r, 400));
-    }
-    analisadas++;
-    setDupProgress(analisadas, total, `${analisadas} de ${total} analisadas`);
-  }
-
-  _gruposDup = grupos;
-  _varreduraRodando = false;
-  document.getElementById('btn-varrer').disabled = false;
-  document.getElementById('dup-status').style.display = 'none';
-  renderDuplicatas(grupos, total);
-}
-
-// Extrai o texto real que o colaborador escreveu (comentário)
-function textoNC(nc) {
-  const comentario = (nc.comentarios || []).filter(c => c && c.trim().length > 2).join(' | ');
-  return comentario || nc.itemCurto || '';
-}
-
-// Normaliza texto: minúsculo, sem acento, sem pontuação
-function normalizar(txt) {
-  return txt.toLowerCase()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9\s]/g, ' ')
-    .replace(/\s+/g, ' ').trim();
-}
-
-// Pré-filtragem rápida por palavras-chave comuns (antes de chamar a IA)
-function temPalavraEmComum(txtA, txtB) {
-  const stopwords = new Set(['e','o','a','os','as','de','do','da','dos','das','em','no','na','nos','nas','um','uma','uns','umas','para','com','sem','por','que','nao','nao','esta','esta','estao','tem','nao','foi','ser','esta','tambem','so','mais','muito','ja','ainda','quando','onde','como','qual','quais','seu','sua','seus','suas']);
-  const toksA = normalizar(txtA).split(' ').filter(t => t.length > 2 && !stopwords.has(t));
-  const toksB = normalizar(txtB).split(' ').filter(t => t.length > 2 && !stopwords.has(t));
-  if (!toksA.length || !toksB.length) return true; // sem tokens suficientes, deixa IA decidir
-  return toksA.some(t => toksB.some(b => b.includes(t) || t.includes(b)));
-}
-
-async function geminiCompararGrupo(ncBase, candidatas, todasNCs) {
-  const textoBase = textoNC(ncBase);
-
-  // Filtra candidatas com algum texto
-  let candidatasValidas = candidatas.slice(0, 30).filter(nc => textoNC(nc).length > 2);
-  if (!candidatasValidas.length) return [];
-
-  // IMPORTANTE: não pré-filtra por equipamento pois o mesmo problema pode aparecer
-  // descrito em equipamentos com nomes ligeiramente diferentes
-
-  const lista = candidatasValidas.map((nc, i) => {
-    const texto = textoNC(nc);
-    return `[${i}] Equip: "${nc.equipamento}" | Setor: "${nc.setor||'N/A'}" | Relato: "${texto}" | Status: ${nc._encerrada ? 'encerrada' : 'aberta'}`;
-  }).join('\n');
-
-  const prompt = `Você é um sistema de detecção de duplicatas para inspeções de segurança industrial no Brasil.
-
-TAREFA: Identificar quais relatos abaixo descrevem o MESMO PROBLEMA que o relato base, mesmo que escritos de forma completamente diferente, com erros ortográficos, abreviações ou gírias industriais.
-
-RELATO BASE:
-Equipamento: "${ncBase.equipamento}"
-Setor: "${ncBase.setor||'N/A'}"
-O que o colaborador escreveu: "${textoBase}"
-
-RELATOS PARA COMPARAR:
-${lista}
-
-CRITÉRIOS — considere MESMO PROBLEMA quando:
-1. Descrevem a mesma falha física ou condição de risco
-2. No mesmo equipamento OU equipamentos similares
-3. Mesmo que escritos com erros, abreviações ou palavras diferentes
-
-EXEMPLOS DE DUPLICATAS ÓBVIAS:
-- "maquina desligada sem botao" = "botao de emergencia quebrado" = "nao liga" = "sem botao de parada"
-- "ponte estragada" = "talha quebrada" = "nao levanta" = "motor da ponte parado" = "correia solta"  
-- "extintor vazio" = "extintor usado" = "sem extintor" = "extintor vencido" = "falta extintor"
-- "cabo danificado" = "fio pelado" = "cabo cortado" = "isolamento ruim"
-- "vazamento oleo" = "perdendo oleo" = "oleo no chao" = "vazando"
-
-SEJA GENEROSO na detecção. Prefira falso positivo a falso negativo.
-Use score 0.50 para "provavelmente o mesmo", 0.70 para "quase certeza", 0.90 para "certeza".
-
-Responda APENAS JSON válido sem markdown, sem texto antes ou depois:
-{"similares":[{"indice":0,"score":0.85,"motivo":"ambos relatam botão de emergência sem funcionar"}]}
-
-Se absolutamente nenhum for similar: {"similares":[]}`;
-
-  try {
-    const resp = await fetch(GEMINI_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.0, maxOutputTokens: 500 }
-      })
-    });
-    if (!resp.ok) throw new Error('HTTP ' + resp.status);
-    const data = await resp.json();
-    const txt = data.candidates?.[0]?.content?.parts?.[0]?.text || '{"similares":[]}';
-
-    // Extrai JSON com segurança mesmo se vier com texto extra
-    const match = txt.match(/\{[\s\S]*\}/);
-    if (!match) return [];
-    const json = JSON.parse(match[0]);
-
-    return (json.similares || []).map(s => ({
-      nc: candidatasValidas[s.indice],
-      score: s.score,
-      pct: Math.round(s.score * 100),
-      motivo: s.motivo
-    })).filter(s => s.nc && s.score >= 0.50); // threshold mais baixo: 50%
-
-  } catch(e) {
-    console.warn('Gemini erro:', e.message);
-    return [];
-  }
-}
-
-function setDupProgress(atual, total, txt) {
-  const pct = total > 0 ? Math.round((atual / total) * 100) : 0;
-  document.getElementById('dup-progress').style.width = pct + '%';
-  document.getElementById('dup-progress-txt').textContent = atual + ' de ' + total + ' NCs analisadas';
-  document.getElementById('dup-status-txt').textContent = txt;
-}
-
-function renderDuplicatas(grupos, totalNCs) {
-  const totalDup = grupos.reduce((a, g) => a + g.similares.length, 0);
-  const grAbertos = grupos.filter(g => g.status !== 'resolvida').length;
-  const grEncerrados = grupos.filter(g => g.status === 'resolvida').length;
-
-  // Resumo KPIs
-  document.getElementById('dup-resumo').style.display = 'grid';
-  document.getElementById('dup-resumo').innerHTML = [
-    {c:'red',  pt:'Grupos de duplicatas', zh:'重复组数', v:grupos.length,   s:'encontrados pela IA'},
-    {c:'amber',pt:'NCs possivelmente duplicadas', zh:'可能重复的项', v:totalDup, s:'para revisar'},
-    {c:'blue', pt:'NCs analisadas', zh:'已分析项目', v:totalNCs, s:'abertas e encerradas'},
-  ].map(k=>`<div class="kpi ${k.c}"><div><span class="tri"><span class="pt">${k.pt}</span><span class="zh">${k.zh}</span></span></div><div class="kv">${k.v}</div><div class="ks">${k.s}</div></div>`).join('');
-
-  if (!grupos.length) {
-    document.getElementById('dup-resultado').innerHTML =
-      '<div style="text-align:center;padding:2rem;color:var(--text2)"><div style="font-size:32px;margin-bottom:12px">✅</div><div style="font-size:14px;font-weight:500"><span class="pt">Nenhuma duplicata encontrada!</span> · <span class="zh" style="color:var(--teal)">未发现重复项！</span></div><div style="font-size:12px;color:var(--text3);margin-top:6px"><span class="pt">Todas as NCs parecem ser problemas distintos</span></div></div>';
+// ── Resumo hoje (Dashboard) ────────────────────────────────────
+function rDashHoje() {
+  const lista = G.inspecoesHoje || [];
+  const el = document.getElementById('dash-hoje');
+  if (!lista.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><p>Nenhuma inspeção registrada hoje</p></div>';
     return;
   }
-
-  document.getElementById('dup-resultado').innerHTML = grupos.map((g, gi) => {
-    const stPrinc = g.principal._encerrada ? 'resolvida-item' : (st(g.principal) === 'resolvida' ? 'resolvida-item' : 'principal');
-    const textoBasePrinc = textoNC(g.principal);
-    const ncsPrinc = `<div class="dup-nc-item ${stPrinc}">
-      <div style="flex:1">
-        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
-          <span class="tag-principal"><span class="pt">Principal</span> · <span class="zh">主要</span></span>
-          ${g.principal._encerrada || st(g.principal)==='resolvida' ? '<span class="tag-rv">Encerrada · 已关闭</span>' : ''}
+  const comNC = lista.filter(i => i.ncs > 0).length;
+  el.innerHTML = `<div style="font-size:.78rem;color:var(--tl);margin-bottom:.75rem">${lista.length} inspeção${lista.length>1?'ões':''} hoje · ${comNC} com NC apontada</div>` +
+    lista.slice(0, 6).map(i => {
+      const ini = i.responsavel.split(' ').map(p => p[0]).join('').slice(0,2).toUpperCase();
+      return `<div class="cl-card ${i.ncs > 0 ? 'com-nc' : 'sem-nc'}">
+        <div class="cl-av">${ini}</div>
+        <div class="cl-info">
+          <div class="cl-name">${i.responsavel}</div>
+          <div class="cl-detail">${i.equipamento} · ${i.setor} · ${i.hora}</div>
+          ${i.comentario ? `<div class="cl-comment">"${i.comentario.slice(0,80)}"</div>` : ''}
         </div>
-        <div style="font-size:13px;font-weight:500;margin-bottom:3px">${g.principal.itemCurto}</div>
-        ${textoBasePrinc && textoBasePrinc !== g.principal.itemCurto ? `<div style="font-size:11px;color:#fcd34d;margin-bottom:3px;font-style:italic">"${textoBasePrinc.slice(0,100)}"</div>` : ''}
-        <div style="font-size:11px;color:var(--text2)">${g.principal.equipamento} · ${g.principal.setor||'—'} · ${g.principal.ocorrencias||1}x · ${g.principal.primeiraNota}</div>
-      </div>
-    </div>`;
-
-    const ncsSim = g.similares.map(s => {
-      const stS = s.nc._encerrada ? 'resolvida-item' : (st(s.nc) === 'resolvida' ? 'resolvida-item' : 'similar');
-      const textoSim = textoNC(s.nc);
-      return `<div class="dup-nc-item ${stS}">
-        <div style="flex:1">
-          <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
-            <span class="tag-similar">${s.pct}% similar · ${s.pct}% 相似</span>
-            ${s.nc._encerrada || st(s.nc)==='resolvida' ? '<span class="tag-rv">Encerrada · 已关闭</span>' : ''}
-          </div>
-          <div style="font-size:13px;font-weight:500;margin-bottom:3px">${s.nc.itemCurto}</div>
-          ${textoSim && textoSim !== s.nc.itemCurto ? `<div style="font-size:11px;color:#fcd34d;margin-bottom:3px;font-style:italic">"${textoSim.slice(0,100)}"</div>` : ''}
-          <div style="font-size:11px;color:var(--text2)">${s.nc.equipamento} · ${s.nc.setor||'—'} · ${s.nc.ocorrencias||1}x · ${s.nc.primeiraNota}</div>
-          <div style="font-size:10px;color:#f59e0b;margin-top:3px;font-style:italic">🤖 ${s.motivo}</div>
-        </div>
+        ${i.ncs > 0 ? `<span class="badge r">${i.ncs} NC${i.ncs>1?'s':''}</span>` : `<span class="badge g">OK</span>`}
       </div>`;
-    }).join('');
-
-    return `<div class="dup-grupo">
-      <div class="dup-grupo-header" onclick="toggleGrupo(${gi})">
-        <div style="flex:1;min-width:0">
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px">
-            <span style="font-size:13px;font-weight:500">Grupo ${gi+1} — ${g.similares.length+1} NC(s)</span>
-            <span style="font-size:10px;padding:2px 8px;border-radius:10px;background:${g.metodo==='direto'?'rgba(34,197,94,.15)':'rgba(59,130,246,.15)'};color:${g.metodo==='direto'?'#86efac':'#93c5fd'}">${g.metodo==='direto'?'✓ Comentário idêntico':'🤖 IA semântica'}</span>
-            ${g.status==='resolvida'?'<span style="font-size:10px;padding:2px 8px;border-radius:10px;background:var(--green-dim);color:#86efac">Inclui resolvidas · 含已关闭</span>':''}
-          </div>
-          <div style="font-size:11px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${g.principal.equipamento} · "${textoNC(g.principal).slice(0,60)}"</div>
-        </div>
-        <span id="seta-${gi}" style="color:var(--text2);font-size:16px;flex-shrink:0;margin-left:8px">▾</span>
-      </div>
-      <div id="grupo-body-${gi}" class="dup-grupo-body">
-        ${ncsPrinc}${ncsSim}
-        <div class="dup-acoes">
-          <div style="font-size:11px;color:var(--text2);align-self:center;width:100%;margin-bottom:4px">
-            <span class="pt">O que fazer com este grupo?</span> · <span class="zh">如何处理此组？</span>
-          </div>
-          <button class="sim-btn" style="background:rgba(59,130,246,.2);color:#93c5fd;border:1px solid rgba(59,130,246,.4)" onclick="unificarGrupo(${gi})">
-            🔗 <span class="pt">Unificar em 1 NC</span> · <span class="zh">合并为1项</span>
-          </button>
-          <button class="sim-btn sim-unif" onclick="ignorarGrupo(${gi})">
-            <span class="pt">✓ Já está correto assim</span> · <span class="zh">✓ 保持现状</span>
-          </button>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
+    }).join('') +
+    (lista.length > 6 ? `<p style="font-size:.74rem;color:var(--tl);text-align:center;margin-top:.5rem">+${lista.length-6} mais — veja a aba Checklists</p>` : '');
 }
 
-async function unificarGrupo(gi) {
-  const grupo = _gruposDup[gi];
-  if (!grupo) return;
-
-  const principal = grupo.principal;
-  const similares = grupo.similares;
-
-  // Confirma com o usuário
-  const nomesPrincipal = textoNC(principal).slice(0,60);
-  const qtd = similares.length;
-  if (!confirm(`Manter como NC principal:\n"${nomesPrincipal}"\n\nRemover ${qtd} NC(s) duplicada(s) do painel?\n\nEsta ação marca as duplicatas como resolvidas/unificadas.`)) return;
-
-  const btn = document.querySelector(`#grupo-body-${gi} .dup-acoes button`);
-  if (btn) { btn.disabled = true; btn.textContent = 'Processando...'; }
-
-  let erros = 0;
-
-  // Para cada NC similar: marca como "resolvida" no Firebase com nota de unificação
-  for (const s of similares) {
-    const nc = s.nc;
-    const chave = nk(nc);
-    const tratativaExistente = T[chave] || {};
-
-    const tratativaUnif = {
-      ...tratativaExistente,
-      status:      'resolvida',
-      responsavel: tratativaExistente.responsavel || 'Sistema',
-      acao:        `[UNIFICADA] Duplicata da NC: "${textoNC(principal).slice(0,80)}" — Unificação feita pelo painel de duplicatas.`,
-      updatedAt:   new Date().toISOString(),
-      equipamento: nc.equipamento,
-      itemCurto:   nc.itemCurto,
-      setor:       nc.setor || '',
-      unificadaCom: textoNC(principal).slice(0,100),
-    };
-
-    try {
-      if (db) {
-        await db.ref('tratativas/' + chave).set(tratativaUnif);
-      }
-      T[chave] = tratativaUnif;
-    } catch(e) {
-      console.warn('Erro ao unificar:', e);
-      erros++;
-    }
-  }
-
-  // Atualiza a NC principal no Firebase com nota de que foi unificada
-  const chavePrincipal = nk(principal);
-  const tratPrincipal = T[chavePrincipal] || {};
-  try {
-    const update = {
-      ...tratPrincipal,
-      equipamento: principal.equipamento,
-      itemCurto:   principal.itemCurto,
-      setor:       principal.setor || '',
-      unificacaoFeita: true,
-      qtdUnificadas: qtd,
-      updatedAt: new Date().toISOString(),
-    };
-    if (db) await db.ref('tratativas/' + chavePrincipal).update(update);
-    T[chavePrincipal] = { ...tratPrincipal, ...update };
-  } catch(e) { console.warn('Erro ao atualizar principal:', e); }
-
-  if (erros > 0) {
-    toast(`${qtd - erros} de ${qtd} unificadas. ${erros} erro(s).`, 'err');
-  } else {
-    toast(`✅ ${qtd} NC(s) unificadas! Painel atualizado · 已合并 ${qtd} 项`, 'ok');
-  }
-
-  // Remove o grupo do painel de duplicatas visualmente
-  const el = document.getElementById('grupo-body-' + gi).closest('.dup-grupo');
-  el.style.transition = 'opacity .4s';
-  el.style.opacity = '0';
-  setTimeout(() => {
-    el.remove();
-    // Atualiza o painel principal de NCs
-    rTudo();
-    // Atualiza o resumo de duplicatas
-    const restantes = document.querySelectorAll('.dup-grupo').length;
-    if (restantes === 0) {
-      document.getElementById('dup-resultado').innerHTML =
-        '<div style="text-align:center;padding:2rem;color:var(--text2)"><div style="font-size:32px;margin-bottom:12px">✅</div><div style="font-size:14px;font-weight:500"><span class="pt">Todos os grupos foram tratados!</span> · <span class="zh" style="color:var(--teal)">所有重复项已处理！</span></div></div>';
-    }
-  }, 500);
-}
-
-function toggleGrupo(gi) {
-  const body = document.getElementById('grupo-body-'+gi);
-  const seta = document.getElementById('seta-'+gi);
-  const aberto = body.style.display !== 'none';
-  body.style.display = aberto ? 'none' : 'block';
-  seta.textContent = aberto ? '▸' : '▾';
-}
-
-function ignorarGrupo(gi) {
-  const el = document.getElementById('grupo-body-'+gi).closest('.dup-grupo');
-  el.style.opacity = '0.4';
-  el.style.pointerEvents = 'none';
-  toast('Grupo marcado como revisado · 已标记为已审查', 'ok');
-}
-
-function diagnosticarUnificadas() {
-  const ncs = G.ncsUnicas || [];
-  const tratativas = T || {};
-
-  let html = '<div style="background:var(--bg3);border-radius:8px;padding:16px;margin-top:12px;font-size:11px">';
-  html += '<div style="font-weight:500;margin-bottom:10px;font-size:13px">🔧 Diagnóstico de unificação</div>';
-
-  // Mostra todas as tratativas com status
-  html += '<div style="margin-bottom:10px"><strong>Tratativas no Firebase (' + Object.keys(tratativas).length + '):</strong></div>';
-
-  Object.entries(tratativas).forEach(([k, v]) => {
-    const unif = v.acao && v.acao.startsWith('[UNIFICADA]');
-    const cor = unif ? '#86efac' : v.status === 'resolvida' ? '#fcd34d' : '#fca5a5';
-    html += '<div style="padding:4px 0;border-bottom:1px solid var(--border);color:' + cor + '">';
-    html += '<strong>' + k.slice(0,40) + '</strong> | ' + v.status + ' | ' + (v.acao ? v.acao.slice(0,50) : 'sem ação');
-    html += '</div>';
-  });
-
-  html += '<div style="margin-top:12px"><strong>NCs visíveis (' + ncs.length + '):</strong></div>';
-  ncs.forEach(nc => {
-    const k = nk(nc);
-    const trat = tratativas[k] || {};
-    const unif = trat.acao && trat.acao.startsWith('[UNIFICADA]');
-    const cor = unif ? '#86efac' : '#fca5a5';
-    html += '<div style="padding:4px 0;border-bottom:1px solid var(--border);color:' + cor + '">';
-    html += nc.itemCurto.slice(0,40) + ' | chave: ' + k.slice(0,30) + ' | unif: ' + (unif ? 'SIM ✅' : 'NÃO');
-    html += '</div>';
-  });
-
-  html += '</div>';
-
-  // Mostra resultado na aba
-  const area = document.getElementById('dup-resultado');
-  area.innerHTML = html;
-  document.getElementById('dup-inicial').style.display = 'none';
-}
-
-// ══ INSPEÇÕES DO DIA ═════════════════════════════════════════
-
-let _filtroInsp = 'hoje';
-
-function abrirAbaInspecoes() {
-  renderInspecoes(_filtroInsp);
-}
-
-function renderInspecoes(filtro) {
-  _filtroInsp = filtro;
-  const hoje = new Date();
-  const hojeStr = hoje.toISOString().split('T')[0];
-  const semanaStr = new Date(hoje.setDate(hoje.getDate()-7)).toISOString().split('T')[0];
-
-  // Pega lista conforme filtro
+// ── Checklists ───────────────────────────────────────────────
+function rCL(filtro) {
+  _clFiltro = filtro;
   let lista = [];
-  if (filtro === 'hoje') {
-    lista = G.inspecoesHoje || [];
-  } else if (filtro === 'semana') {
-    lista = G.inspecoesSemana || [];
-  } else {
-    // filtro por equipamento
-    lista = (G.inspecoesSemana || []).filter(i => i.equipamento === filtro);
-  }
+  if (filtro === 'hoje')    lista = G.inspecoesHoje || [];
+  else if (filtro === 'semana') lista = G.inspecoesSemana || [];
+  else lista = (G.inspecoesSemana || []).filter(i => i.equipamento === filtro);
 
-  // Atualiza subtítulo
-  const data = new Date();
-  document.getElementById('insp-subtitulo').textContent =
-    filtro === 'hoje'
-      ? `${data.toLocaleDateString('pt-BR', {weekday:'long', day:'2-digit', month:'long'})} · 今日 · Today`
-      : filtro === 'semana'
-      ? 'Últimos 7 dias · 最近7天 · Last 7 days'
-      : filtro + ' — últimos 7 dias';
-
-  // Filtros
-  const equips = [...new Set([...(G.inspecoesHoje||[]), ...(G.inspecoesSemana||[])].map(i => i.equipamento))];
-  const fbar = document.getElementById('insp-fbar');
+  // Monta filter bar
+  const equips = [...new Set([...(G.inspecoesHoje||[]),...(G.inspecoesSemana||[])].map(i => i.equipamento))];
+  const fbar = document.getElementById('cl-fbar');
   fbar.innerHTML = '';
-  [{pt:'Hoje',zh:'今日',v:'hoje'}, {pt:'7 dias',zh:'7天',v:'semana'},
-   ...equips.map(e=>({pt:e,zh:e,v:e}))
-  ].forEach((b,i) => {
+  [{pt:'Hoje',v:'hoje'},{pt:'7 dias',v:'semana'}, ...equips.map(e => ({pt:e,v:e}))].forEach(b => {
     const btn = document.createElement('button');
     btn.className = 'fbtn' + (b.v === filtro ? ' active' : '');
-    btn.innerHTML = `<span class="tb"><span class="pt">${b.pt}</span><span class="zh">${b.zh}</span></span>`;
-    btn.onclick = () => renderInspecoes(b.v);
+    btn.textContent = b.pt;
+    btn.onclick = () => rCL(b.v);
     fbar.appendChild(btn);
   });
 
   // KPIs
-  const totalInsp = lista.length;
   const comNC = lista.filter(i => i.ncs > 0).length;
   const semNC = lista.filter(i => i.ncs === 0).length;
-  const equipsInsp = new Set(lista.map(i => i.equipamento)).size;
-
-  document.getElementById('insp-kpis').innerHTML = [
-    {c:'blue',  pt:'Inspeções',      zh:'检查次数',   v:totalInsp, s:'no período'},
-    {c:'green', pt:'Sem NC',         zh:'无不合格项', v:semNC,     s:'conformes'},
-    {c:'red',   pt:'Com NC',         zh:'有不合格项', v:comNC,     s:'registraram problema'},
-    {c:'teal',  pt:'Equipamentos',   zh:'设备数量',   v:equipsInsp,s:'inspecionados'},
-  ].map(k=>`<div class="kpi ${k.c}">
-    <div><span class="tri"><span class="pt">${k.pt}</span><span class="zh">${k.zh}</span></span></div>
-    <div class="kv">${k.v}</div><div class="ks">${k.s}</div>
-  </div>`).join('');
+  document.getElementById('cl-kpis').innerHTML = [
+    {c:'blue',  l:'Inspeções',    v:lista.length, s:'no período'},
+    {c:'green', l:'Conformes',    v:semNC,        s:'sem NC'},
+    {c:'red',   l:'Com NC',       v:comNC,        s:'registraram problema'},
+    {c:'teal',  l:'Equipamentos', v:new Set(lista.map(i=>i.equipamento)).size, s:'inspecionados'},
+  ].map(k => `<div class="kpi ${k.c}"><div class="kpi-lbl">${k.l}</div><div class="kpi-val">${k.v}</div><div class="kpi-sub">${k.s}</div></div>`).join('');
 
   if (!lista.length) {
-    document.getElementById('insp-lista').innerHTML =
-      `<div style="text-align:center;padding:3rem;color:var(--text2)">
-        <div style="font-size:32px;margin-bottom:12px">📋</div>
-        <div style="font-size:14px;font-weight:500">
-          <span class="pt">Nenhuma inspeção registrada</span> · <span class="zh" style="color:var(--teal)">暂无检查记录</span>
-        </div>
-        <div style="font-size:11px;color:var(--text3);margin-top:6px">
-          <span class="pt">Os dados aparecem após configurar o Apps Script</span>
-        </div>
-      </div>`;
+    document.getElementById('cl-lista').innerHTML = '<div class="empty"><div class="empty-icon">📋</div><p>Nenhuma inspeção no período</p></div>';
     return;
   }
 
   // Agrupa por equipamento
   const porEquip = {};
-  lista.forEach(i => {
-    if (!porEquip[i.equipamento]) porEquip[i.equipamento] = [];
-    porEquip[i.equipamento].push(i);
-  });
+  lista.forEach(i => { if(!porEquip[i.equipamento]) porEquip[i.equipamento]=[]; porEquip[i.equipamento].push(i); });
 
-  // Renderiza agrupado por equipamento
-  document.getElementById('insp-lista').innerHTML = Object.entries(porEquip)
-    .sort((a,b) => {
-      // Equipamentos com NC aparecem primeiro
-      const ncA = a[1].some(i => i.ncs > 0);
-      const ncB = b[1].some(i => i.ncs > 0);
-      return ncB - ncA;
-    })
+  document.getElementById('cl-lista').innerHTML = Object.entries(porEquip)
+    .sort((a,b) => { const na=a[1].some(i=>i.ncs>0), nb=b[1].some(i=>i.ncs>0); return nb-na; })
     .map(([equip, insps]) => {
-      const totalNC = insps.reduce((s, i) => s + i.ncs, 0);
-      const cor = totalNC > 0 ? '#fca5a5' : '#86efac';
-      const badge = totalNC > 0
-        ? `<span class="badge br">${totalNC} NC${totalNC>1?'s':''}</span>`
-        : `<span class="badge bg"><span class="pt">Conforme</span> · <span class="zh">合规</span></span>`;
+      const totalNC = insps.reduce((s,i) => s+i.ncs, 0);
+      const badgeHTML = totalNC > 0
+        ? `<span class="badge r">${totalNC} NC${totalNC>1?'s':''}</span>`
+        : `<span class="badge g">Conforme</span>`;
 
       const cards = insps
         .sort((a,b) => b.data.localeCompare(a.data) || b.hora.localeCompare(a.hora))
         .map(i => {
-          const iniciais = i.responsavel.split(' ').map(p=>p[0]).join('').slice(0,2).toUpperCase();
-          const cls = i.ncs > 0 ? 'com-nc' : 'sem-nc';
-          return `<div class="insp-card ${cls}">
-            <div class="insp-avatar">${iniciais}</div>
-            <div>
-              <div style="font-size:13px;font-weight:500;margin-bottom:3px">${i.responsavel}</div>
-              <div style="font-size:11px;color:var(--text2)">
-                ${i.setor} · ${i.turno !== '—' ? i.turno+' · ' : ''}${i.data} ${i.hora}
-              </div>
-              ${i.comentario ? `<div style="font-size:11px;color:#fcd34d;margin-top:3px;font-style:italic">"${i.comentario.slice(0,80)}"</div>` : ''}
+          const ini = i.responsavel.split(' ').map(p => p[0]).join('').slice(0,2).toUpperCase();
+          // Correlaciona NCs do mesmo equipamento reportadas por essa pessoa
+          const ncsRelac = (G.ncsUnicas || []).filter(nc =>
+            nc.equipamento === equip &&
+            nc.responsaveis && nc.responsaveis.some(r => r.toLowerCase().includes(i.responsavel.split(' ')[0].toLowerCase()))
+          );
+          const ncListHTML = ncsRelac.length
+            ? `<div class="cl-nc-list">${ncsRelac.slice(0,3).map(nc => `• ${nc.itemCurto.slice(0,45)}`).join('<br>')}</div>`
+            : '';
+          return `<div class="cl-card ${i.ncs > 0 ? 'com-nc' : 'sem-nc'}">
+            <div class="cl-av">${ini}</div>
+            <div class="cl-info">
+              <div class="cl-name">${i.responsavel}</div>
+              <div class="cl-detail">${i.setor}${i.turno && i.turno !== '—' ? ' · ' + i.turno : ''} · ${i.data} ${i.hora}</div>
+              ${i.comentario ? `<div class="cl-comment">"${i.comentario.slice(0,80)}"</div>` : ''}
             </div>
-            <div style="text-align:right">
-              ${i.ncs > 0
-                ? `<span class="badge br">${i.ncs} NC${i.ncs>1?'s':''}</span>`
-                : `<span class="badge bg"><span class="pt">OK</span></span>`
-              }
+            <div class="cl-ncs">
+              ${i.ncs > 0 ? `<span class="badge r">${i.ncs} NC${i.ncs>1?'s':''}</span>` : `<span class="badge g">OK</span>`}
+              ${ncListHTML}
             </div>
           </div>`;
         }).join('');
 
-      return `<div class="insp-equip-group">
-        <div class="insp-equip-header">
+      return `<div class="equip-group">
+        <div class="equip-hdr">
           <div>
-            <span style="font-size:13px;font-weight:500">${equip}</span>
-            <span style="font-size:11px;color:var(--text2);margin-left:8px">${insps.length} inspeção${insps.length>1?'ões':''}</span>
+            <span class="equip-name">${equip}</span>
+            <span style="font-size:.74rem;color:var(--tl);margin-left:.5rem">${insps.length} inspeção${insps.length>1?'ões':''}</span>
           </div>
-          ${badge}
+          ${badgeHTML}
         </div>
-        <div style="padding:12px 16px">${cards}</div>
+        <div class="equip-body">${cards}</div>
       </div>`;
     }).join('');
+}
+
+// ── Não Conformidades ────────────────────────────────────────
+function ncTab(tab, btn) {
+  _ncTab = tab;
+  document.querySelectorAll('.sub-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  rNC(tab);
+}
+
+function rNC(tab) {
+  const ncs = G.ncsUnicas || [];
+  let lista;
+  if (tab === 'nova')     lista = ncs.filter(n => st(n) === 'nao-iniciada');
+  else if (tab === 'pend') lista = ncs.filter(n => st(n) === 'em-andamento');
+  else                     lista = ncs.filter(n => st(n) === 'resolvida');
+
+  const msgs = { nova:'Nenhuma NC nova sem tratativa', pend:'Nenhuma NC em andamento', resv:'Nenhuma NC resolvida' };
+  if (!lista.length) {
+    document.getElementById('nc-lista').innerHTML = `<div class="empty"><div class="empty-icon">${tab==='resv'?'✅':'📋'}</div><p>${msgs[tab]||''}</p></div>`;
+    return;
+  }
+
+  lista.sort((a,b) => b.diasEmAberto - a.diasEmAberto);
+  document.getElementById('nc-lista').innerHTML = lista.map(nc => {
+    const tr = T[nk(nc)] || {};
+    const cls = tab === 'resv' ? 'resolved' : nc.urgencia;
+    const bCls = nc.urgencia === 'urgente' ? 'r' : nc.urgencia === 'atencao' ? 'a' : 'b';
+    const nj = JSON.stringify(JSON.stringify(nc));
+    return `<div class="nc-item ${cls}">
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;gap:6px;align-items:center;margin-bottom:.2rem;flex-wrap:wrap">
+          <span class="badge ${bCls}">${nc.urgencia.toUpperCase()}</span>
+          <span style="font-size:.72rem;color:var(--tl)">${nc.equipamento} · ${nc.setor||'—'}</span>
+        </div>
+        <div class="nc-desc">${nc.itemCurto}</div>
+        <div class="nc-meta">
+          ${nc.ocorrencias} ocorrência${nc.ocorrencias>1?'s':''} · desde ${nc.primeiraNota}
+          ${nc.responsaveis&&nc.responsaveis.length ? ' · Reportado por: '+nc.responsaveis.join(', ') : ''}
+          ${tr.responsavel ? ' · <strong>Resp: '+tr.responsavel+'</strong>' : ''}
+          ${tr.prazo ? ' · Prazo: '+tr.prazo : ''}
+        </div>
+        ${tr.acao ? `<div style="font-size:.72rem;color:var(--tl);margin-top:.25rem;font-style:italic">${tr.acao.slice(0,100)}${tr.acao.length>100?'…':''}</div>` : ''}
+      </div>
+      <div style="display:flex;align-items:center;gap:.6rem;flex-shrink:0;margin-left:.75rem">
+        <div class="nc-days">
+          <div class="nc-days-n">${nc.diasEmAberto}</div>
+          <div class="nc-days-l">dias</div>
+        </div>
+        <button class="btn btn-p btn-sm" onclick='om(${nj})'>${tab==='resv'?'Ver':'Tratar'}</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Modal NC ─────────────────────────────────────────────────
+function om(nj) {
+  NCA = JSON.parse(nj);
+  const tr = T[nk(NCA)] || {};
+  document.getElementById('mtit').textContent = NCA.itemCurto.slice(0,65);
+  document.getElementById('mst').value = tr.status || 'nao-iniciada';
+  document.getElementById('mre').value = tr.responsavel || '';
+  document.getElementById('mpr').value = tr.prazo || '';
+  document.getElementById('mac').value = tr.acao || '';
+  document.getElementById('mnc').style.display = 'flex';
+}
+
+async function saveTrat() {
+  if (!NCA) return;
+  const btn = document.getElementById('bsnc');
+  btn.disabled = true;
+  const k = nk(NCA), tr = {
+    status:      document.getElementById('mst').value,
+    responsavel: document.getElementById('mre').value.trim(),
+    prazo:       document.getElementById('mpr').value,
+    acao:        document.getElementById('mac').value.trim(),
+    updatedAt:   new Date().toISOString(),
+    equipamento: NCA.equipamento,
+    itemCurto:   NCA.itemCurto,
+    setor:       NCA.setor || ''
+  };
+  try {
+    if (db) { await db.ref('tratativas/' + k).set(tr); toast('Salvo com sucesso'); }
+    else    { T[k] = tr; rTudo(); toast('Salvo localmente'); }
+  } catch(e) { T[k] = tr; rTudo(); toast('Erro de sync — salvo localmente','err'); }
+  fm('mnc');
+  btn.disabled = false;
+}
+
+// ── DSS ──────────────────────────────────────────────────────
+function rDSSKpis() {
+  const n = new Date();
+  const mes = DL.filter(d => { const m = new Date(d.data); return m.getMonth()===n.getMonth() && m.getFullYear()===n.getFullYear(); }).length;
+  const par = DL.reduce((a,d) => a + (parseInt(d.participantes)||0), 0);
+  document.getElementById('kpis-dss').innerHTML = [
+    {c:'teal',  l:'Total DSS',     v:DL.length, s:'desde o início'},
+    {c:'blue',  l:'Este mês',      v:mes,        s:'mês atual'},
+    {c:'green', l:'Participantes', v:par,        s:'acumulado'},
+  ].map(k => `<div class="kpi ${k.c}"><div class="kpi-lbl">${k.l}</div><div class="kpi-val">${k.v}</div><div class="kpi-sub">${k.s}</div></div>`).join('');
+}
+
+function rDSS() {
+  rDSSKpis();
+  if (!DL.length) {
+    document.getElementById('dss-lista').innerHTML = '<div class="empty"><div class="empty-icon">💬</div><p>Nenhum DSS registrado</p></div>';
+    return;
+  }
+  document.getElementById('dss-lista').innerHTML = DL.map(d => `
+    <div class="dss-card">
+      <div class="dss-date">${d.data} · ${d.setor||'—'}</div>
+      <div class="dss-tema">${d.tema||'—'}</div>
+      <div class="dss-meta">Responsável: <strong>${d.responsavel||'—'}</strong> · Participantes: <strong>${d.participantes||0}</strong></div>
+      ${d.assuntos ? `<div style="font-size:.77rem;color:var(--tl);margin-top:.35rem;line-height:1.6">${d.assuntos.replace(/\n/g,'<br>')}</div>` : ''}
+      ${isAdmin ? `<button class="btn btn-sm" style="margin-top:.5rem;font-size:.74rem;color:var(--red)" onclick="delDSS('${d.id}')">Excluir</button>` : ''}
+    </div>`).join('');
+}
+
+function abrirDSS() {
+  document.getElementById('dd').value = new Date().toISOString().split('T')[0];
+  ['dt','dse','dr','da'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('dp').value = '';
+  document.getElementById('mdss').style.display = 'flex';
+}
+
+async function saveDSS() {
+  const btn = document.getElementById('bsdss'), tema = document.getElementById('dt').value.trim();
+  if (!tema) { toast('Informe o tema','err'); return; }
+  btn.disabled = true;
+  const dss = {
+    data:         document.getElementById('dd').value,
+    tema,
+    setor:        document.getElementById('dse').value.trim(),
+    responsavel:  document.getElementById('dr').value.trim(),
+    participantes:parseInt(document.getElementById('dp').value)||0,
+    assuntos:     document.getElementById('da').value.trim(),
+    criadoEm:     new Date().toISOString()
+  };
+  try {
+    if (db) { await db.ref('dss').push(dss); toast('DSS registrado'); }
+    else    { DL.unshift({id:Date.now().toString(),...dss}); rDSS(); toast('Salvo localmente'); }
+  } catch(e) { toast('Erro ao salvar','err'); }
+  fm('mdss'); btn.disabled = false;
+}
+
+async function delDSS(id) {
+  if (!isAdmin) { toast('Sem permissão','err'); return; }
+  if (!confirm('Excluir este DSS?')) return;
+  try {
+    if (db) await db.ref('dss/' + id).remove();
+    DL = DL.filter(d => d.id !== id); rDSS(); toast('DSS excluído');
+  } catch(e) { toast('Erro ao excluir','err'); }
+}
+
+// ── Helpers ──────────────────────────────────────────────────
+function fm(id) { document.getElementById(id).style.display='none'; NCA=null; }
+function toast(msg, type='ok') {
+  const el = document.createElement('div');
+  el.className = 'toast' + (type==='err'?' err':'');
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+
+// ── Dados de demo ─────────────────────────────────────────────
+function demo() {
+  const hoje = new Date().toISOString().split('T')[0];
+  const ontem = new Date(Date.now()-86400000).toISOString().split('T')[0];
+  const anteontem = new Date(Date.now()-172800000).toISOString().split('T')[0];
+  return {
+    totalInspecoes: 236,
+    equipamentos: [
+      {nome:'Solda MIG / Içamento', inspecoes:122, ncsUnicas:4},
+      {nome:'Empilhadeira',         inspecoes:75,  ncsUnicas:2},
+      {nome:'Granalha',             inspecoes:23,  ncsUnicas:1},
+    ],
+    ncsUnicas: [
+      {item:'Item 21',itemCurto:'Equipamento de içamento com problemas', equipamento:'Solda MIG / Içamento',setor:'Fabricação de Caixa',urgencia:'urgente',diasEmAberto:22,ocorrencias:14,primeiraNota:'2026-02-24',responsaveis:['Jardel','Marcos'],comentarios:['ponte estragada']},
+      {item:'Item 19',itemCurto:'Extintor ausente ou fora da validade',  equipamento:'Solda MIG / Içamento',setor:'Fabricação de Caixa',urgencia:'urgente',diasEmAberto:17,ocorrencias:7, primeiraNota:'2026-03-01',responsaveis:['Ricardo'],           comentarios:['foi usado']},
+      {item:'Item 5', itemCurto:'Freios sem funcionamento adequado',      equipamento:'Empilhadeira',         setor:'Logística',         urgencia:'atencao',diasEmAberto:9, ocorrencias:2, primeiraNota:'2026-03-09',responsaveis:['João'],              comentarios:[]},
+      {item:'Item 4', itemCurto:'Parada de emergência com falha',         equipamento:'Granalha',             setor:'Acabamento',        urgencia:'atencao',diasEmAberto:8, ocorrencias:3, primeiraNota:'2026-03-10',responsaveis:['Pedro'],             comentarios:[]},
+      {item:'Item 20',itemCurto:'EPI incompleto para soldagem',           equipamento:'Solda MIG / Içamento',setor:'Fabricação de Caixa',urgencia:'recente',diasEmAberto:3, ocorrencias:1, primeiraNota:'2026-03-15',responsaveis:['Jardel'],            comentarios:['lente frontal']},
+      {item:'Item 7', itemCurto:'Bateria com danos visuais',              equipamento:'Empilhadeira',         setor:'Logística',         urgencia:'atencao',diasEmAberto:7, ocorrencias:1, primeiraNota:'2026-03-11',responsaveis:['João'],              comentarios:['inchaço']},
+      {item:'Item 9', itemCurto:'Extintor com validade vencida',          equipamento:'Granalha',             setor:'Acabamento',        urgencia:'atencao',diasEmAberto:10,ocorrencias:4, primeiraNota:'2026-03-08',responsaveis:['Ana'],               comentarios:['vencida']},
+    ],
+    inspecoesHoje: [
+      {responsavel:'Jardel Silva',  equipamento:'Solda MIG / Içamento',setor:'Fabricação de Caixa',turno:'Manhã', data:hoje,     hora:'07:15',ncs:2,comentario:'ponte com problema e extintor usado'},
+      {responsavel:'João Santos',   equipamento:'Empilhadeira',         setor:'Logística',          turno:'Manhã', data:hoje,     hora:'07:30',ncs:1,comentario:'freio com problema'},
+      {responsavel:'Ana Costa',     equipamento:'Granalha',             setor:'Acabamento',         turno:'Manhã', data:hoje,     hora:'08:00',ncs:0,comentario:''},
+      {responsavel:'Ricardo Souza', equipamento:'Solda MIG / Içamento',setor:'Fabricação de Caixa',turno:'Tarde', data:hoje,     hora:'13:00',ncs:1,comentario:'extintor ainda não reposto'},
+    ],
+    inspecoesSemana: [
+      {responsavel:'Jardel Silva',  equipamento:'Solda MIG / Içamento',setor:'Fabricação de Caixa',turno:'Manhã', data:hoje,      hora:'07:15',ncs:2,comentario:'ponte com problema e extintor usado'},
+      {responsavel:'João Santos',   equipamento:'Empilhadeira',         setor:'Logística',          turno:'Manhã', data:hoje,      hora:'07:30',ncs:1,comentario:'freio com problema'},
+      {responsavel:'Ana Costa',     equipamento:'Granalha',             setor:'Acabamento',         turno:'Manhã', data:hoje,      hora:'08:00',ncs:0,comentario:''},
+      {responsavel:'Ricardo Souza', equipamento:'Solda MIG / Içamento',setor:'Fabricação de Caixa',turno:'Tarde', data:hoje,      hora:'13:00',ncs:1,comentario:'extintor ainda não reposto'},
+      {responsavel:'Pedro Lima',    equipamento:'Granalha',             setor:'Acabamento',         turno:'Tarde', data:ontem,     hora:'13:30',ncs:1,comentario:'parada de emergência'},
+      {responsavel:'Marcos Pereira',equipamento:'Empilhadeira',         setor:'Logística',          turno:'Tarde', data:ontem,     hora:'14:00',ncs:0,comentario:''},
+      {responsavel:'Jardel Silva',  equipamento:'Solda MIG / Içamento',setor:'Fabricação de Caixa',turno:'Manhã', data:anteontem, hora:'07:10',ncs:2,comentario:'problemas persistem'},
+    ],
+  };
 }
 
 iniciar();
